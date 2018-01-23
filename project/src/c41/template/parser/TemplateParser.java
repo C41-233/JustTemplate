@@ -1,8 +1,12 @@
 package c41.template.parser;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 
 import c41.template.internal.engine.Template;
 import c41.template.internal.util.ArrayUtil;
@@ -138,6 +142,17 @@ public class TemplateParser {
 	public ITemplate parse(Reader reader) throws IOException {
 		InputBuffer buffer = new InputBuffer(reader);
 		return parse(buffer);
+	}
+	
+	public ITemplate parse(File file) throws IOException {
+		try {
+			FileInputStream fis = new FileInputStream(file);
+			InputStreamReader reader = new InputStreamReader(fis, "utf8");
+			return parse(reader);
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
+		
 	}
 	
 }

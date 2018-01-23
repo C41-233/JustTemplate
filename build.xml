@@ -1,8 +1,10 @@
 <project default="all">
 	<property name="folder.bin" value="project/bin"/>
+	<property name="output.jar" value="dist/just-template.jar"/>
 
     <target name="build">
 		<delete dir="${folder.bin}" />
+		<mkdir dir="${folder.bin}" />
         <javac 
 			srcdir="project/src" 
 			destdir="${folder.bin}"
@@ -10,6 +12,7 @@
 			includeantruntime="false"
 		>
         </javac>
+		<jar jarfile="${output.jar}" basedir="${folder.bin}" includes="**/*"/>
     </target>
 	
 	<target name="all" depends="build"/>

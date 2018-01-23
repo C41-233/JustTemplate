@@ -18,7 +18,11 @@ public class InputBuffer {
 		if(backs.size() > 0) {
 			return backs.remove(backs.size() - 1);
 		}
-		return reader.read();
+		int nread = reader.read();
+		if(nread == -1) {
+			reader.close();
+		}
+		return nread;
 	}
 	
 	public void back(int ch) {
