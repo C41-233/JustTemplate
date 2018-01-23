@@ -1,0 +1,16 @@
+<project default="all">
+	<property name="folder.bin" value="project/bin"/>
+
+    <target name="build">
+		<delete dir="${folder.bin}" />
+        <javac 
+			srcdir="project/src" 
+			destdir="${folder.bin}"
+			encoding="utf-8"
+			includeantruntime="false"
+		>
+        </javac>
+    </target>
+	
+	<target name="all" depends="build"/>
+</project>
