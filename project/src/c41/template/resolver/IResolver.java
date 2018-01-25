@@ -1,6 +1,6 @@
-package c41.template.parser;
+package c41.template.resolver;
 
-public interface IResolve {
+public interface IResolver {
 
 	public String onVisitParameter(char mark, String name);
 	

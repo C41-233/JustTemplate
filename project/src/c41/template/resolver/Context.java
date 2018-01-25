@@ -1,4 +1,4 @@
-package c41.template.internal.resolve;
+package c41.template.resolver;
 
 import java.util.HashMap;
 

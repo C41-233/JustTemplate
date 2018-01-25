@@ -1,17 +1,8 @@
 package c41.template.parser;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
-
-import c41.template.internal.engine.Template;
 import c41.template.internal.util.ArrayUtil;
 import c41.template.internal.util.Buffer;
-import c41.template.internal.util.InputBuffer;
+import c41.template.parser.reader.ITemplateReader;
 
 public class TemplateParser {
 
@@ -44,7 +35,7 @@ public class TemplateParser {
 		this.closeMatch = ch;
 	}
 	
-	private ITemplate parse(InputBuffer reader) throws IOException {
+	public ITemplate parse(ITemplateReader reader){
 		ParseState state = ParseState.ReadText;
 		Buffer buffer = new Buffer();
 		Template template = new Template();
@@ -107,7 +98,7 @@ public class TemplateParser {
 				}
 				else {
 					buffer.append(commentPrefix);
-					reader.back(ch);
+					reader.push(ch);
 					state = ParseState.ReadText;
 				}
 				break;
@@ -119,7 +110,7 @@ public class TemplateParser {
 				}
 				else {
 					buffer.append(currentTemplatePrefix);
-					reader.back(ch);
+					reader.push(ch);
 					currentTemplatePrefix = 0;
 					state = ParseState.ReadText;
 				}
@@ -127,32 +118,9 @@ public class TemplateParser {
 			
 			}
 		}
-		return template;
-	}
-	
-	public ITemplate parse(String template) {
-		try {
-			StringReader reader = new StringReader(template);
-			return parse(reader);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
-	public ITemplate parse(Reader reader) throws IOException {
-		InputBuffer buffer = new InputBuffer(reader);
-		return parse(buffer);
-	}
-	
-	public ITemplate parse(File file) throws IOException {
-		try {
-			FileInputStream fis = new FileInputStream(file);
-			InputStreamReader reader = new InputStreamReader(fis, "utf8");
-			return parse(reader);
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
-		}
 		
+		template.end();
+		return template;
 	}
 	
 }

@@ -1,25 +1,24 @@
-package c41.template.internal.resolve;
+package c41.template.resolver;
 
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import c41.template.internal.util.Buffer;
-import c41.template.parser.IResolve;
 
-public class ReflectResolve implements IResolve{
+public class ReflectResolver implements IResolver{
 
 
 	private final ArrayList<Context> contexts = new ArrayList<>();
 	
-	public ReflectResolve(Object root) {
+	public ReflectResolver(Object root) {
 		Context context = new Context(ObjectCreator.create(root));
 		push(context);
 	}
 
-	public ReflectResolve(Map<String, ?> root) {
-		Context context = new Context(ObjectCreator.create(root));
-		for (Entry<String, ?> entry: root.entrySet()) {
+	public ReflectResolver(Map<String, ?> arguments) {
+		Context context = new Context(ObjectCreator.create(arguments));
+		for (Entry<String, ?> entry: arguments.entrySet()) {
 			context.addParameter(entry.getKey(), ObjectCreator.create(entry.getValue()));
 		}
 		push(context);

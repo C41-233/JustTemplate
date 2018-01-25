@@ -4,27 +4,19 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.HashMap;
 
-import org.junit.Before;
 import org.junit.Test;
 
-import c41.template.parser.TemplateParser;
+import c41.template.JustTemplate;
 
 public class TestTemplate {
-
-	private TemplateParser parser;
-	
-	@Before
-	public void init() {
-		parser = new TemplateParser();
-	}
 	
 	@Test
 	public void test1() {
-		assertEquals("text", parser.parse("text").render(null));
-		assertEquals("text! {comment}", parser.parse("text! {comment}").render(null));
-		assertEquals("text$ {.}", parser.parse("text$ {.}").render(null));
-		assertEquals("text after", parser.parse("text!{comment} after").render(null));
-		assertEquals("value=100", parser.parse("value=${.}").render(100));
+		assertEquals("text", JustTemplate.render("text", (Object)null));
+		assertEquals("text! {comment}", JustTemplate.render("text! {comment}", (Object)null));
+		assertEquals("text$ {.}", JustTemplate.render("text$ {.}", (Object)null));
+		assertEquals("text after", JustTemplate.render("text!{comment} after", (Object)null));
+		assertEquals("value=100", JustTemplate.render("value=${.}", 100));
 	}
 
 	public static class TestObject1{
@@ -37,15 +29,15 @@ public class TestTemplate {
 	
 	@Test
 	public void test2() {
-		assertEquals("value=100", parser.parse("value=${.value}").render(new TestObject1()));
-		assertEquals("value=100", parser.parse("value=${.obj.value}").render(new TestObject2()));
+		assertEquals("value=100", JustTemplate.render("value=${.value}", new TestObject1()));
+		assertEquals("value=100", JustTemplate.render("value=${.obj.value}", new TestObject2()));
 	}
 
 	@Test
 	public void test3() {
 		HashMap<String, Object> map = new HashMap<>();
 		map.put("value", 100);
-		assertEquals("value=100", parser.parse("value=${value}").render(map));
+		assertEquals("value=100", JustTemplate.render("value=${value}", map));
 	}
 
 }
