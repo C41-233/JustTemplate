@@ -40,4 +40,10 @@ public class StringTemplateReader implements ITemplateReader {
 		cache.push(ch);
 	}
 
+	@Override
+	public void close() {
+		i = string.length() + 1;
+		cache.clear();
+	}
+
 }

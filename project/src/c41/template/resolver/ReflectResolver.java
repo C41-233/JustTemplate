@@ -1,5 +1,6 @@
 package c41.template.resolver;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -8,12 +9,18 @@ import c41.template.internal.util.Buffer;
 
 public class ReflectResolver implements IResolver{
 
-
 	private final ArrayList<Context> contexts = new ArrayList<>();
 	
 	public ReflectResolver(Object root) {
-		Context context = new Context(ObjectCreator.create(root));
-		push(context);
+		try {
+			Context context = new Context(ObjectCreator.create(root));
+			for (Field field : root.getClass().getFields()) {
+				context.addParameter(field.getName(), ObjectCreator.create(field.get(root)));
+			}
+			push(context);
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			throw new ResolveException(e);
+		}
 	}
 
 	public ReflectResolver(Map<String, ?> arguments) {

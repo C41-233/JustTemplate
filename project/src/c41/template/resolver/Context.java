@@ -15,7 +15,7 @@ class Context{
 	public IObject getParameter(String name) {
 		IObject obj = parameters.get(name);
 		if(obj == null) {
-			throw new ResolveException();
+			throw new ResolveException("No variable "+name+" in context.");
 		}
 		return obj;
 	}

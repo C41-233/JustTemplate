@@ -37,5 +37,9 @@ public class FastStack {
 			array = Arrays.copyOf(array, array.length / 2);
 		}
 	}
+
+	public void clear() {
+		i = 0;
+	}
 	
 }

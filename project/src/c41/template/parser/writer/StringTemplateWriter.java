@@ -13,5 +13,9 @@ public class StringTemplateWriter implements ITemplateWriter{
 	public String toString() {
 		return sb.toString();
 	}
+
+	@Override
+	public void close() {
+	}
 	
 }
