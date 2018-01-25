@@ -12,7 +12,11 @@
 			includeantruntime="false"
 		>
         </javac>
-		<jar jarfile="${output.jar}" basedir="${folder.bin}" includes="**/*"/>
+		<jar jarfile="${output.jar}" basedir="${folder.bin}" includes="**/*">
+			<manifest>
+				<attribute name="Built-By" value="C41"/>
+			</manifest>
+		</jar>
     </target>
 	
 	<target name="all" depends="build"/>
