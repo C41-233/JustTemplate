@@ -14,8 +14,10 @@ public class ReflectResolver implements IResolver{
 	public ReflectResolver(Object root) {
 		try {
 			Context context = new Context(ObjectCreator.create(root));
-			for (Field field : root.getClass().getFields()) {
-				context.addParameter(field.getName(), ObjectCreator.create(field.get(root)));
+			if(root != null) {
+				for (Field field : root.getClass().getFields()) {
+					context.addParameter(field.getName(), ObjectCreator.create(field.get(root)));
+				}
 			}
 			push(context);
 		} catch (IllegalArgumentException | IllegalAccessException e) {
