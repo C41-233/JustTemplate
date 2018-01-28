@@ -24,6 +24,10 @@ public class FastStack {
 		return val;
 	}
 	
+	public int peek() {
+		return array[i - 1];
+	}
+	
 	public int size() {
 		return i;
 	}

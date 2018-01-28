@@ -3,6 +3,7 @@ package c41.template.parser;
 import c41.template.internal.util.ArrayUtil;
 import c41.template.internal.util.Buffer;
 import c41.template.parser.reader.ITemplateReader;
+import c41.template.resolver.ResolveException;
 
 public class TemplateParser {
 
@@ -50,17 +51,20 @@ public class TemplateParser {
 			case ReadText:{
 				Runnable endReadText = ()->{
 					if(buffer.length() > 0) {
-						template.addTextFragment(buffer.toString());
-						buffer.clear();
+						template.addTextFragment(buffer.take());
 					}
 				};
 				if(ch == -1) {
 					endReadText.run();
 					break MainLoop;
 				}
-				else if(commentPrefix == ch) {
+				else if(ch == commentPrefix) {
 					endReadText.run();
 					state = ParseState.WaitCommentOpenMatch;
+				}
+				else if(ch == logicPrefix) {
+					endReadText.run();
+					state = ParseState.WaitLogicOpenMatch;
 				}
 				else if(ArrayUtil.exist(templatePrefixs, ch)) {
 					endReadText.run();
@@ -82,8 +86,7 @@ public class TemplateParser {
 			
 			case ReadParameter:{
 				if(ch == closeMatch) {
-					template.addParameter((char) currentTemplatePrefix, buffer.toString());
-					buffer.clear();
+					template.addParameter((char) currentTemplatePrefix, buffer.take());
 					state = ParseState.ReadText;
 				}
 				else {
@@ -114,8 +117,124 @@ public class TemplateParser {
 					currentTemplatePrefix = 0;
 					state = ParseState.ReadText;
 				}
+				break;
 			}
 			
+			case WaitLogicOpenMatch:{
+				if(ch == openMatch) {
+					state = ParseState.WaitLogicWord;
+				}
+				else {
+					buffer.append(logicPrefix);
+					reader.push(ch);
+					state = ParseState.ReadText;
+				}
+				break;
+			}
+			
+			case WaitLogicWord:{
+				if(ch == 'i') {
+					state = ParseState.WaitLogicWord_I_F;
+				}
+				else if(ch == 'e') {
+					state = ParseState.WaitLogicWord_E_NDIF;
+				}
+				else {
+					throw new ResolveException("unrecognized logic word %c", ch);
+				}
+				break;
+			}
+			
+			case WaitLogicWord_I_F:{
+				if(ch == 'f') {
+					state = ParseState.EndLogicWord_IF;
+				}
+				else {
+					throw new ResolveException("unrecognized logic word %c", ch);
+				}
+				break;
+			}
+			
+			case EndLogicWord_IF:{
+				if(Character.isWhitespace(ch)) {
+					state = ParseState.ReadLogicWord_IF_Whitespace;
+					reader.push(ch);
+				}
+				break;
+			}
+			
+			case ReadLogicWord_IF_Whitespace:{
+				if(!Character.isWhitespace(ch)) {
+					buffer.append(ch);
+					state = ParseState.ReadLogicParamter_IF;
+				}
+				break;
+			}
+			
+			case ReadLogicParamter_IF:{
+				if(ch == '}') {
+					state = ParseState.ReadText;
+					template.addIfFragment(buffer.take());
+				}
+				else {
+					buffer.append(ch);
+				}
+				break;
+			}
+			
+			case WaitLogicWord_E_NDIF:{
+				if(ch == 'n') {
+					state = ParseState.WaitLogicWord_EN_DIF;
+				}
+				else {
+					throw new ResolveException();
+				}
+				break;
+			}
+			
+			case WaitLogicWord_EN_DIF:{
+				if(ch == 'd') {
+					state = ParseState.WaitLogicWord_END_IF;
+				}
+				else {
+					throw new ResolveException();
+				}
+				break;
+			}
+			
+			case WaitLogicWord_END_IF:{
+				if(ch == 'i') {
+					state = ParseState.WaitLogicWord_ENDI_F;
+				}
+				else {
+					throw new ResolveException();
+				}
+				break;
+			}
+			
+			case WaitLogicWord_ENDI_F:{
+				if(ch == 'f') {
+					state = ParseState.WaitLogicWordCloseMatch;
+				}
+				else {
+					throw new ResolveException();
+				}
+				break;
+			}
+			
+			case WaitLogicWordCloseMatch:{
+				if(ch == '}') {
+					state = ParseState.ReadText;
+					template.endIfFragment();
+				}
+				else {
+					throw new ResolveException();
+				}
+				break;
+			}
+			
+			default:
+				throw new ResolveException("state %s", state);
 			}
 		}
 		

@@ -35,18 +35,33 @@ public class ReflectResolver implements IResolver{
 	
 	@Override
 	public String onVisitParameter(char mark, String name) {
-		IObject object = getLeafObject(current(), name);
-		return object.toString();
+		IObject object = getParameterObject(current(), name);
+		return object.asString();
 	}
 
+	@Override
+	public boolean OnVisitCondition(String name) {
+		IObject object = getParameterObject(current(), name);
+		return object.asBoolean();
+	}
+	
 	private static enum ObjectState{
 		Start,
 		StartReadPart,
 		ReadPart,
 		ReadFullPart,
+		EndPart,
+	}
+
+	private Context current() {
+		return contexts.get(contexts.size() - 1);
 	}
 	
-	private static IObject getLeafObject(Context context, String name) {
+	private void push(Context context) {
+		contexts.add(context);
+	}
+	
+	private static IObject getParameterObject(Context context, String name) {
 		Buffer buffer = new Buffer();
 		
 		IObject root = null;
@@ -55,7 +70,7 @@ public class ReflectResolver implements IResolver{
 		for(int i=0; i<name.length(); i++) {
 			char ch = name.charAt(i);
 			switch (state) {
-			//first head
+			
 			case Start:{
 				if(ch == '.') {
 					root = context.current;
@@ -72,11 +87,11 @@ public class ReflectResolver implements IResolver{
 			}
 			
 			case StartReadPart:{
-				if(ch == '.' || ch == '[' || ch == ']') {
-					throw new ResolveException();
+				if(ch == '[') {
+					state = ObjectState.ReadFullPart;
 				}
 				else {
-					buffer.append(ch);
+					i--;
 					state = ObjectState.ReadPart;
 				}
 				break;
@@ -87,17 +102,51 @@ public class ReflectResolver implements IResolver{
 					if(buffer.length() == 0) {
 						throw new ResolveException();
 					}
-					String part = buffer.toString();
-					buffer.clear();
+					String part = buffer.take();
 					if(root == null) {
 						root = context.getParameter(part);
 					}
 					else {
 						root = root.getKey(part);
 					}
+					i--;
+					state = ObjectState.EndPart;
 				}
 				else {
 					buffer.append(ch);
+				}
+				break;
+			}
+			
+			case ReadFullPart:{
+				if(ch == ']') {
+					if(buffer.length() == 0) {
+						throw new ResolveException();
+					}
+					String part = buffer.take();
+					if(root == null) {
+						root = context.getParameter(part);
+					}
+					else {
+						root = root.getKey(part);
+					}
+					state = ObjectState.EndPart;
+				}
+				else {
+					buffer.append(ch);
+				}
+				break;
+			}
+			
+			case EndPart:{
+				if(ch == '.') {
+					state = ObjectState.ReadPart;
+				}
+				else if(ch == '['){
+					state = ObjectState.ReadFullPart;
+				}
+				else {
+					throw new ResolveException("unexpected character "+ch);
 				}
 				break;
 			}
@@ -109,12 +158,11 @@ public class ReflectResolver implements IResolver{
 		
 		//EOF
 		switch (state) {
-		case ReadPart:
+		case ReadPart:{
 			if(buffer.length() == 0) {
 				throw new ResolveException();
 			}
-			String part = buffer.toString();
-			buffer.clear();
+			String part = buffer.take();
 			if(root == null) {
 				root = context.getParameter(part);
 			}
@@ -122,19 +170,21 @@ public class ReflectResolver implements IResolver{
 				root = root.getKey(part);
 			}
 			break;
-		default:
+		}
+		case StartReadPart:{
 			break;
 		}
+		case EndPart:{
+			break;
+		}
+		default:
+			throw new ResolveException("unexpected eof");
+		}
 		
+		if(root == null) {
+			throw new ResolveException();
+		}
 		return root;
 	}
-	
-	private Context current() {
-		return contexts.get(contexts.size() - 1);
-	}
-	
-	private void push(Context context) {
-		contexts.add(context);
-	}
-	
+
 }

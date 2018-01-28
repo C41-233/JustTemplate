@@ -8,16 +8,19 @@ public final class Buffer {
 		sb.append((char)ch);
 	}
 	
-	public void clear() {
-		sb.delete(0, sb.length());
-	}
-	
 	public int length() {
 		return sb.length();
+	}
+	
+	public String take() {
+		String string = sb.toString();
+		sb.delete(0, sb.length());
+		return string;
 	}
 	
 	@Override
 	public String toString() {
 		return sb.toString();
 	}
+	
 }

@@ -12,6 +12,10 @@ public class ResolveException extends RuntimeException {
 		super(msg);
 	}
 
+	public ResolveException(String format, Object...args) {
+		super(String.format(format, args));
+	}
+
 	public ResolveException(Exception e) {
 		super(e);
 	}

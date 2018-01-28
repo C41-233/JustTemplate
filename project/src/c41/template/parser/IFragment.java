@@ -1,43 +1,70 @@
 package c41.template.parser;
 
-import c41.template.parser.writer.ITemplateWriter;
-import c41.template.resolver.IResolver;
+enum FragmentType{
+	Text,
+	Parameter,
+	If,
+	EndIf,
+}
 
 interface IFragment {
-
-	public void renderTo(IResolver resolve, ITemplateWriter writer);
+	
+	public FragmentType getType();
 	
 }
 
 class TextFragment implements IFragment{
 
-	private final String text;
+	public final String text;
 	
 	public TextFragment(String text) {
 		this.text = text;
 	}
 
 	@Override
-	public void renderTo(IResolver resolve, ITemplateWriter writer){
-		writer.write(text);
+	public FragmentType getType() {
+		return FragmentType.Text;
 	}
-	
+
 }
 
 class ParameterFragment implements IFragment{
 
-	private final char mark;
-	private final String name;
+	public final char mark;
+	public final String name;
 	
 	public ParameterFragment(char mark, String name) {
 		this.mark = mark;
 		this.name = name;
 	}
-	
+
 	@Override
-	public void renderTo(IResolver resolve, ITemplateWriter writer) {
-		String output = resolve.onVisitParameter(mark, name);
-		writer.write(output);
+	public FragmentType getType() {
+		return FragmentType.Parameter;
+	}
+	
+}
+
+class IfFragment implements IFragment{
+
+	public final String name;
+	
+	public IfFragment(String name) {
+		this.name = name;
 	}
 
+	@Override
+	public FragmentType getType() {
+		return FragmentType.If;
+	}
+	
+}
+
+class EndIfFragment implements IFragment{
+
+	@Override
+	public FragmentType getType() {
+		return FragmentType.EndIf;
+	}
+	
 }

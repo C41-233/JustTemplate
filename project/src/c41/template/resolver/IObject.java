@@ -1,20 +1,36 @@
 package c41.template.resolver;
 
 import java.lang.reflect.Field;
-import java.util.Iterator;
 
 interface IObject {
 
-	public boolean toBoolean();
-	
-	@Override
-	public String toString();
-	
-	public Iterator<Object> toIterator();
+	public String asString();
 	
 	public IObject getKey(String name);
+
+	public boolean asBoolean();
 }
 
+
+class NullObject implements IObject{
+
+	@Override
+	public String asString() {
+		return "";
+	}
+
+	@Override
+	public IObject getKey(String name) {
+		throw new ResolveException("No property %s in null", name);
+	}
+
+	@Override
+	public boolean asBoolean() {
+		return false;
+	}
+	
+	
+}
 
 class ObjectObject implements IObject{
 
@@ -24,16 +40,6 @@ class ObjectObject implements IObject{
 		this.object = object;
 	}
 	
-	@Override
-	public boolean toBoolean() {
-		return true;
-	}
-
-	@Override
-	public Iterator<Object> toIterator() {
-		throw new ResolveException();
-	}
-
 	@Override
 	public IObject getKey(String name) {
 		try {
@@ -45,38 +51,113 @@ class ObjectObject implements IObject{
 	}
 
 	@Override
-	public String toString() {
+	public String asString() {
 		return object.toString();
+	}
+
+	@Override
+	public boolean asBoolean() {
+		return true;
 	}
 	
 }
 
-class NumberObject implements IObject{
+class StringObject implements IObject{
 
-	private Number value;
+	private String value;
 	
-	public NumberObject(Number value) {
+	public StringObject(String value) {
 		this.value = value;
 	}
 	
 	@Override
-	public boolean toBoolean() {
-		return value.intValue() != 0;
+	public IObject getKey(String name) {
+		throw new ResolveException("No property %s in class %s", name, value.getClass());
 	}
 
 	@Override
-	public Iterator<Object> toIterator() {
-		throw new ResolveException();
+	public String asString() {
+		return value;
 	}
 
 	@Override
-	public String toString() {
+	public boolean asBoolean() {
+		return !value.isEmpty();
+	}
+	
+}
+
+class IntegerObject implements IObject{
+
+	private Integer value;
+	
+	public IntegerObject(Integer value) {
+		this.value = value;
+	}
+	
+	@Override
+	public String asString() {
 		return value.toString();
 	}
 
 	@Override
 	public IObject getKey(String name) {
-		throw new ResolveException();
+		throw new ResolveException("No property %s in class %s", name, value.getClass());
+	}
+
+	@Override
+	public boolean asBoolean() {
+		return value != 0;
+	}
+	
+}
+
+class DoubleObject implements IObject{
+
+	private Double value;
+	
+	public DoubleObject(Double value) {
+		this.value = value;
+	}
+	
+	@Override
+	public String asString() {
+		return value.toString();
+	}
+
+	@Override
+	public IObject getKey(String name) {
+		throw new ResolveException("No property %s in class %s", name, value.getClass());
+	}
+
+	@Override
+	public boolean asBoolean() {
+		return value != 0;
+	}
+	
+}
+
+class BooleanObject implements IObject{
+
+	private final Boolean value;
+	
+	public BooleanObject(Boolean value) {
+		this.value = value;
+	}
+	
+	@Override
+	public String asString() {
+		return value.toString();
+	}
+
+	@Override
+	public IObject getKey(String name) {
+		throw new ResolveException("No property %s in class %s", name, value.getClass());
+	}
+
+	@Override
+	public boolean asBoolean() {
+		return value;
 	}
 	
 }
