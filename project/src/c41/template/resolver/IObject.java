@@ -6,7 +6,7 @@ interface IObject {
 
 	public String asString();
 	
-	public IObject getKey(String name);
+	public IObject getKey(String name, int line, int column);
 
 	public boolean asBoolean();
 }
@@ -20,7 +20,7 @@ class NullObject implements IObject{
 	}
 
 	@Override
-	public IObject getKey(String name) {
+	public IObject getKey(String name, int line, int column) {
 		throw new ResolveException("No property %s in null", name);
 	}
 
@@ -41,9 +41,10 @@ class ObjectObject implements IObject{
 	}
 	
 	@Override
-	public IObject getKey(String name) {
+	public IObject getKey(String name, int line, int column) {
 		try {
-			Field field = object.getClass().getField(name);
+			Field field = object.getClass().getDeclaredField(name);
+			field.setAccessible(true);
 			return ObjectCreator.create(field.get(object));
 		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
 			throw new ResolveException(e);
@@ -71,8 +72,8 @@ class StringObject implements IObject{
 	}
 	
 	@Override
-	public IObject getKey(String name) {
-		throw new ResolveException("No property %s in class %s", name, value.getClass());
+	public IObject getKey(String name, int line, int column) {
+		throw new ResolveException("read property '%s' in class %s in line %d column %d", name, value.getClass().getName(), line, column);
 	}
 
 	@Override
@@ -101,7 +102,7 @@ class IntegerObject implements IObject{
 	}
 
 	@Override
-	public IObject getKey(String name) {
+	public IObject getKey(String name, int line, int column) {
 		throw new ResolveException("No property %s in class %s", name, value.getClass());
 	}
 
@@ -126,8 +127,8 @@ class DoubleObject implements IObject{
 	}
 
 	@Override
-	public IObject getKey(String name) {
-		throw new ResolveException("No property %s in class %s", name, value.getClass());
+	public IObject getKey(String name, int line, int column) {
+		throw new ResolveException("no property %s in class %s", name, value.getClass().getName());
 	}
 
 	@Override
@@ -151,8 +152,8 @@ class BooleanObject implements IObject{
 	}
 
 	@Override
-	public IObject getKey(String name) {
-		throw new ResolveException("No property %s in class %s", name, value.getClass());
+	public IObject getKey(String name, int line, int column) {
+		throw new ResolveException("read property '%s' in class %s in line %d column %d", name, value.getClass().getName(), line, column);
 	}
 
 	@Override

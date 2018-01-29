@@ -15,12 +15,12 @@ class Template implements ITemplate{
 		this.fragments.add(new TextFragment(string));
 	}
 
-	public void onParameter(char mark, String name) {
-		this.fragments.add(new ParameterFragment(mark, name));
+	public void onParameter(char mark, String name, int line, int column) {
+		this.fragments.add(new ParameterFragment(mark, name, line, column));
 	}
 
-	public void onIf(String name, int line, int column) {
-		this.fragments.add(new IfFragment(name));
+	public void onIf(String name, int lineStart, int columnStart, int lineParameter, int columnParameter) {
+		this.fragments.add(new IfFragment(name, lineParameter, columnParameter));
 		ifElseStack++;
 	}
 
@@ -69,12 +69,12 @@ class Template implements ITemplate{
 					continue;
 				}
 				ParameterFragment fragment = (ParameterFragment)f;
-				sb.append(resolve.onVisitParameter(fragment.mark, fragment.name));
+				sb.append(resolve.onVisitParameter(fragment.mark, fragment.name, fragment.line, fragment.column));
 				break;
 			}
 			case If:{
 				IfFragment fragment = (IfFragment) f;
-				boolean condition = resolve.OnVisitCondition(fragment.name);
+				boolean condition = resolve.OnVisitCondition(fragment.name, fragment.line, fragment.column);
 				conditionStack.push(condition ? 1 : 0);
 				break;
 			}

@@ -33,9 +33,14 @@ class ParameterFragment implements IFragment{
 	public final char mark;
 	public final String name;
 	
-	public ParameterFragment(char mark, String name) {
+	public final int line;
+	public final int column;
+	
+	public ParameterFragment(char mark, String name, int line, int column) {
 		this.mark = mark;
 		this.name = name;
+		this.line = line;
+		this.column = column;
 	}
 
 	@Override
@@ -48,9 +53,13 @@ class ParameterFragment implements IFragment{
 class IfFragment implements IFragment{
 
 	public final String name;
+	public final int line;
+	public final int column;
 	
-	public IfFragment(String name) {
+	public IfFragment(String name, int line, int column) {
 		this.name = name;
+		this.line = line;
+		this.column = column;
 	}
 
 	@Override

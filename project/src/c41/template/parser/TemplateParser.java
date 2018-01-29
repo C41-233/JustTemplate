@@ -4,7 +4,6 @@ import c41.template.internal.util.ArrayUtil;
 import c41.template.internal.util.Buffer;
 import c41.template.internal.util.InputReader;
 import c41.template.resolver.ResolveException;
-import javafx.scene.shape.Line;
 
 public class TemplateParser {
 
@@ -91,7 +90,8 @@ public class TemplateParser {
 			
 			case ReadParameter:{
 				if(ch == closeMatch) {
-					template.onParameter((char) currentTemplatePrefix, buffer.take());
+					String word = buffer.take();
+					template.onParameter((char) currentTemplatePrefix, word, reader.getLine(), reader.getColumn()-word.length());
 					state = ParseState.ReadText;
 				}
 				else {
@@ -191,7 +191,8 @@ public class TemplateParser {
 			case ReadLogicParamter_IF:{
 				if(ch == '}') {
 					state = ParseState.ReadText;
-					template.onIf(buffer.take(), reader.getLine(), currentLogicWordPos);
+					String word = buffer.take();
+					template.onIf(word, reader.getLine(), currentLogicWordPos, reader.getLine(), reader.getColumn()-word.length());
 				}
 				else {
 					buffer.append(ch);
