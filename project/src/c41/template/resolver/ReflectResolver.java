@@ -146,7 +146,7 @@ public class ReflectResolver implements IResolver{
 					state = ObjectState.ReadFullPart;
 				}
 				else {
-					throw new ResolveException("unexpected character "+ch);
+					throw new ResolveException("unexpected character %c", ch);
 				}
 				break;
 			}

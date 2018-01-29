@@ -2,7 +2,7 @@ package c41.template.parser;
 
 import c41.template.internal.util.ArrayUtil;
 import c41.template.internal.util.Buffer;
-import c41.template.parser.reader.ITemplateReader;
+import c41.template.internal.util.InputReader;
 import c41.template.resolver.ResolveException;
 
 public class TemplateParser {
@@ -36,16 +36,19 @@ public class TemplateParser {
 		this.closeMatch = ch;
 	}
 	
-	public ITemplate parse(ITemplateReader reader){
+	public ITemplate parse(String input){
+		InputReader reader = new InputReader(input);
+		Template template = new Template();
+
 		ParseState state = ParseState.ReadText;
 		Buffer buffer = new Buffer();
-		Template template = new Template();
 		
 		int currentTemplatePrefix = 0;
 
 		MainLoop:
 		while(true) {
 			int ch = reader.read();
+			
 			switch (state) {
 			
 			case ReadText:{
@@ -54,7 +57,7 @@ public class TemplateParser {
 						template.addTextFragment(buffer.take());
 					}
 				};
-				if(ch == -1) {
+				if(ch == InputReader.EOF) {
 					endReadText.run();
 					break MainLoop;
 				}
@@ -101,7 +104,7 @@ public class TemplateParser {
 				}
 				else {
 					buffer.append(commentPrefix);
-					reader.push(ch);
+					reader.pushBack();
 					state = ParseState.ReadText;
 				}
 				break;
@@ -113,7 +116,7 @@ public class TemplateParser {
 				}
 				else {
 					buffer.append(currentTemplatePrefix);
-					reader.push(ch);
+					reader.pushBack();
 					currentTemplatePrefix = 0;
 					state = ParseState.ReadText;
 				}
@@ -126,7 +129,7 @@ public class TemplateParser {
 				}
 				else {
 					buffer.append(logicPrefix);
-					reader.push(ch);
+					reader.pushBack();
 					state = ParseState.ReadText;
 				}
 				break;
@@ -158,7 +161,7 @@ public class TemplateParser {
 			case EndLogicWord_IF:{
 				if(Character.isWhitespace(ch)) {
 					state = ParseState.ReadLogicWord_IF_Whitespace;
-					reader.push(ch);
+					reader.pushBack();
 				}
 				break;
 			}
@@ -229,6 +232,13 @@ public class TemplateParser {
 				}
 				else {
 					throw new ResolveException();
+				}
+				break;
+			}
+			
+			case UnrecognizedLogicWord:{
+				if(ch == '}' || Character.isWhitespace(ch)) {
+					
 				}
 				break;
 			}

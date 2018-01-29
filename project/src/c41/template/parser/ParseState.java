@@ -23,4 +23,5 @@ enum ParseState {
 	WaitLogicWord_ENDI_F,
 	WaitLogicWordCloseMatch,
 	
+	UnrecognizedLogicWord,
 }

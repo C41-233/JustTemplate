@@ -3,7 +3,6 @@ package c41.template.parser;
 import java.util.ArrayList;
 
 import c41.template.internal.util.FastStack;
-import c41.template.parser.writer.ITemplateWriter;
 import c41.template.resolver.IResolver;
 import c41.template.resolver.ResolveException;
 
@@ -38,7 +37,9 @@ class Template implements ITemplate{
 	}
 	
 	@Override
-	public void renderTo(IResolver resolve, ITemplateWriter writer){
+	public String render(IResolver resolve){
+		StringBuilder sb = new StringBuilder();
+		
 		FastStack conditionStack = new FastStack();
 		for (IFragment f : fragments) {
 			switch (f.getType()) {
@@ -47,7 +48,7 @@ class Template implements ITemplate{
 					continue;
 				}
 				TextFragment fragment = (TextFragment)f;
-				writer.write(fragment.text);
+				sb.append(fragment.text);
 				break;
 			}
 			case Parameter:{
@@ -55,7 +56,7 @@ class Template implements ITemplate{
 					continue;
 				}
 				ParameterFragment fragment = (ParameterFragment)f;
-				writer.write(resolve.onVisitParameter(fragment.mark, fragment.name));
+				sb.append(resolve.onVisitParameter(fragment.mark, fragment.name));
 				break;
 			}
 			case If:{
@@ -68,10 +69,13 @@ class Template implements ITemplate{
 				conditionStack.pop();
 				break;
 			}
+			
 			default:
 				throw new ResolveException();
 			}
+			
 		}
+		return sb.toString();
 	}
 
 }
