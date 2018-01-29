@@ -10,18 +10,14 @@ enum ParseState {
 	WaitParameterOpenMatch,
 	WaitLogicOpenMatch,
 	
-	WaitLogicWord,
+	ReadLogicWord,
+	WaitLogicWordCloseMatch,
 	
-	WaitLogicWord_I_F,
 	EndLogicWord_IF,
 	ReadLogicWord_IF_Whitespace,
 	ReadLogicParamter_IF,
 	
-	WaitLogicWord_E_NDIF,
-	WaitLogicWord_EN_DIF,
-	WaitLogicWord_END_IF,
-	WaitLogicWord_ENDI_F,
-	WaitLogicWordCloseMatch,
-	
-	UnrecognizedLogicWord,
+	EndLogicWord_ElseIf,
+	ReadLogicWord_ElseIf_Whitespace,
+	ReadLogicParameter_ElseIf,
 }
