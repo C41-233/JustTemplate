@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 
 import c41.template.internal.util.Buffer;
 import c41.template.internal.util.InputReader;
+import c41.template.internal.util.ErrorString;
 
 public class ReflectResolver implements IResolver{
 
@@ -62,6 +63,31 @@ public class ReflectResolver implements IResolver{
 		contexts.add(context);
 	}
 	
+	private static class ContextObject implements IObject{
+
+		private final Context context;
+		
+		public ContextObject(Context context) {
+			this.context = context;
+		}
+		
+		@Override
+		public String asString() {
+			throw new ResolveException();
+		}
+
+		@Override
+		public IObject getKey(String name, int line, int column) {
+			return context.getParameter(name);
+		}
+
+		@Override
+		public boolean asBoolean() {
+			throw new ResolveException();
+		}
+		
+	}
+	
 	private static IObject getParameterObject(Context context, String name, int line, int column) {
 		Buffer buffer = new Buffer();
 		InputReader reader = new InputReader(name);
@@ -69,129 +95,121 @@ public class ReflectResolver implements IResolver{
 		IObject root = null;
 		
 		ObjectState state = ObjectState.Start;
-		Read:
-		while(true) {
+		Read:while(true) {
 			int ch = reader.read();
 			
-			if(ch != InputReader.EOF) {
-				
-				switch (state) {
-				
-				case Start:{
-					if(ch == '.') {
-						root = context.current;
-						state = ObjectState.StartReadPart;
-					}
-					else if(ch == '['){
-						state = ObjectState.ReadFullPart;
-					}
-					else {
-						buffer.append(ch);
-						state = ObjectState.ReadPart;
-					}
-					break;
+			switch (state) {
+			
+			case Start:{
+				if(ch == '.') {
+					root = context.current;
+					state = ObjectState.StartReadPart;
 				}
-				
-				case StartReadPart:{
-					if(ch == '[') {
-						state = ObjectState.ReadFullPart;
-					}
-					else {
-						reader.pushBack();
-						state = ObjectState.ReadPart;
-					}
-					break;
+				else if(ch == '['){
+					root = new ContextObject(context);
+					state = ObjectState.ReadFullPart;
 				}
-				
-				case ReadPart:{
-					if(ch == '.') {
-						if(buffer.length() == 0) {
-							throw new ResolveException();
-						}
-						String part = buffer.take();
-						if(root == null) {
-							root = context.getParameter(part);
-						}
-						else {
-							root = root.getKey(part, line, column + reader.getColumn() - part.length());
-						}
-						reader.pushBack();
-						state = ObjectState.EndPart;
-					}
-					else {
-						buffer.append(ch);
-					}
-					break;
+				else if(ch == InputReader.EOF) {
+					throw new ResolveException(ErrorString.unexpectedEndOfParameter(line, column));
 				}
-				
-				case ReadFullPart:{
-					if(ch == ']') {
-						if(buffer.length() == 0) {
-							throw new ResolveException();
-						}
-						String part = buffer.take();
-						if(root == null) {
-							root = context.getParameter(part);
-						}
-						else {
-							root = root.getKey(part, line, column + reader.getColumn() - part.length());
-						}
-						state = ObjectState.EndPart;
-					}
-					else {
-						buffer.append(ch);
-					}
-					break;
+				else {
+					root = new ContextObject(context);
+					buffer.append(ch);
+					state = ObjectState.ReadPart;
 				}
-				
-				case EndPart:{
-					if(ch == '.') {
-						state = ObjectState.ReadPart;
-					}
-					else if(ch == '['){
-						state = ObjectState.ReadFullPart;
-					}
-					else {
-						throw new ResolveException("unexpected character %c", ch);
-					}
-					break;
-				}
-				
-				default:
-					break;
-				}
+				break;
 			}
-			else {
-				switch (state) {
-				case ReadPart:{
+			
+			case StartReadPart:{
+				if(ch == '[') {
+					state = ObjectState.ReadFullPart;
+				}
+				else if(ch == InputReader.EOF) {
+					break Read;
+				}
+				else {
+					reader.pushBack();
+					state = ObjectState.ReadPart;
+				}
+				break;
+			}
+			
+			case ReadPart:{
+				if(ch == '.') {
 					if(buffer.length() == 0) {
 						throw new ResolveException();
 					}
 					String part = buffer.take();
-					if(root == null) {
-						root = context.getParameter(part);
+					root = root.getKey(part, line, column + reader.getColumn() - part.length());
+					reader.pushBack();
+					state = ObjectState.EndPart;
+				}
+				else if(ch == '[') {
+					if(buffer.length() == 0) {
+						throw new ResolveException();
 					}
-					else {
-						root = root.getKey(part, line, column + reader.getColumn() - part.length());
+					String part = buffer.take();
+					root = root.getKey(part, line, column + reader.getColumn() - part.length() - 1);
+					reader.pushBack();
+					state = ObjectState.EndPart;
+				}
+				else if(ch == InputReader.EOF) {
+					if(buffer.length() == 0) {
+						throw new ResolveException();
 					}
+					String part = buffer.take();
+					root = root.getKey(part, line, column + reader.getColumn() - part.length());
 					break Read;
 				}
-				case StartReadPart:{
-					break Read;
+				else {
+					buffer.append(ch);
 				}
-				case EndPart:{
-					break Read;
-				}
-				default:
-					throw new ResolveException("unexpected eof");
-				}
+				break;
 			}
 			
+			case ReadFullPart:{
+				if(ch == ']') {
+					if(buffer.length() == 0) {
+						throw new ResolveException();
+					}
+					String part = buffer.take();
+					root = root.getKey(part, line, column + reader.getColumn() - part.length() - 1);
+					state = ObjectState.EndPart;
+				}
+				else if(ch == InputReader.EOF) {
+					throw new ResolveException(ErrorString.unexpectedEndOfParameter(line, column));
+				}
+				else {
+					buffer.append(ch);
+				}
+				break;
+			}
+			
+			case EndPart:{
+				if(ch == '.') {
+					state = ObjectState.ReadPart;
+				}
+				else if(ch == '['){
+					state = ObjectState.ReadFullPart;
+				}
+				else if(ch == InputReader.EOF) {
+					break Read;
+				}
+				else {
+					throw new ResolveException("unexpected character %c", ch);
+				}
+				break;
+			}
+			
+			default:
+				throw new ResolveException();
+			}
 		}
 		
 		if(root == null) {
 			throw new ResolveException();
 		}
+		
 		return root;
 	}
 

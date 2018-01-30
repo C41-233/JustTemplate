@@ -2,6 +2,7 @@ package c41.template.parser;
 
 import c41.template.internal.util.ArrayUtil;
 import c41.template.internal.util.Buffer;
+import c41.template.internal.util.ErrorString;
 import c41.template.internal.util.InputReader;
 import c41.template.resolver.ResolveException;
 
@@ -141,7 +142,7 @@ public class TemplateParser {
 			case ReadLogicWord:{
 				if(Character.isWhitespace(ch) || ch=='}') {
 					if(buffer.length() == 0) {
-						throw new ResolveException("empty logic block in line %d column %d", reader.getLine(), reader.getColumn()-1);
+						throw new ResolveException(ErrorString.emptyLogicWord(reader.getLine(), reader.getColumn()-1));
 					}
 					String word = buffer.take();
 					switch (word) {
@@ -159,7 +160,7 @@ public class TemplateParser {
 						state = ParseState.EndLogicWord_ElseIf;
 						break;
 					default:
-						throw new ResolveException("unrecognized logic word '%s' in line %d column %d", word, reader.getLine(), reader.getColumn() - word.length());
+						throw new ResolveException(ErrorString.unrecognizedLogicWord(word, reader.getLine(), reader.getColumn() - word.length()));
 					}
 					reader.pushBack();
 				}
@@ -175,7 +176,7 @@ public class TemplateParser {
 					reader.pushBack();
 				}
 				else {
-					throw new ResolveException("unexpected character '%c' after 'if' in line %d column %d", ch, reader.getLine(), reader.getColumn());
+					throw new ResolveException(ErrorString.unexpectedCharacterAfter(ch, "if", reader.getLine(), reader.getColumn()));
 				}
 				break;
 			}

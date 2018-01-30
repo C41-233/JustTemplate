@@ -2,6 +2,8 @@ package c41.template.resolver;
 
 import java.lang.reflect.Field;
 
+import c41.template.internal.util.ErrorString;
+
 interface IObject {
 
 	public String asString();
@@ -21,7 +23,7 @@ class NullObject implements IObject{
 
 	@Override
 	public IObject getKey(String name, int line, int column) {
-		throw new ResolveException("No property %s in null", name);
+		throw new ResolveException("read property '%s' of null in line %d column %d", name, line, column);
 	}
 
 	@Override
@@ -73,7 +75,7 @@ class StringObject implements IObject{
 	
 	@Override
 	public IObject getKey(String name, int line, int column) {
-		throw new ResolveException("read property '%s' in class %s in line %d column %d", name, value.getClass().getName(), line, column);
+		throw new ResolveException(ErrorString.readBadPropertyOfType("name", value.getClass(), line, column));
 	}
 
 	@Override

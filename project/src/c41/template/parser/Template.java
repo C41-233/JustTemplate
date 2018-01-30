@@ -2,6 +2,7 @@ package c41.template.parser;
 
 import java.util.ArrayList;
 
+import c41.template.internal.util.ErrorString;
 import c41.template.internal.util.FastStack;
 import c41.template.resolver.IResolver;
 import c41.template.resolver.ResolveException;
@@ -26,13 +27,13 @@ class Template implements ITemplate{
 
 	public void onElse(int line, int column) {
 		if(ifElseStack == 0) {
-			throw new ResolveException("else without match if or elseif in line %d column %d", line, column);
+			throw new ResolveException(ErrorString.unmatchedElse(line, column));
 		}
 	}
 
 	public void onEndif(int line, int column) {
 		if(ifElseStack == 0) {
-			throw new ResolveException("endif without match if in line %d column %d", line, column);
+			throw new ResolveException(ErrorString.unmatchedEndIf(line, column));
 		}
 		this.fragments.add(new EndIfFragment());
 		ifElseStack--;
@@ -40,7 +41,7 @@ class Template implements ITemplate{
 
 	public void OnElseIf(String take, int line, int column) {
 		if(ifElseStack == 0) {
-			throw new ResolveException("elseif without match if in line %d column %d", line, column);
+			throw new ResolveException(ErrorString.unmatchedElseIf(line, column));
 		}
 		
 	}
