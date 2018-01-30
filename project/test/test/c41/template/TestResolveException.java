@@ -22,7 +22,7 @@ public class TestResolveException {
 			JustTemplate.render("${.value}", false);
 		}
 		catch (ResolveException e) {
-			assertEquals("read property 'value' in class java.lang.Boolean in line 1 column 4", e.getMessage());
+			assertEquals(ErrorString.readBadPropertyOfType("value", Boolean.class, 1, 4), e.getMessage());
 			return;
 		}
 		fail();
@@ -46,7 +46,7 @@ public class TestResolveException {
 			JustTemplate.render("${.value[value]}", new Test1());
 		}
 		catch (ResolveException e) {
-			assertEquals("read property 'value' in class java.lang.String in line 1 column 10", e.getMessage());
+			assertEquals(ErrorString.readBadPropertyOfType("value", String.class, 1, 10), e.getMessage());
 			return;
 		}
 		fail();
@@ -58,7 +58,7 @@ public class TestResolveException {
 			JustTemplate.render("${.value[value]}", "12345");
 		}
 		catch (ResolveException e) {
-			assertEquals("read property 'value' in class java.lang.String in line 1 column 4", e.getMessage());
+			assertEquals(ErrorString.readBadPropertyOfType("value", String.class, 1, 4), e.getMessage());
 			return;
 		}
 		fail();

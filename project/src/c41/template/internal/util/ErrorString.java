@@ -40,5 +40,9 @@ public final class ErrorString {
 			return String.format("read property '%s' of null in line %d column %d", name, line, column);
 		}
 	}
+
+	public static String unexpectedEOF(int line) {
+		return String.format("unexpected eof in line %d", line);
+	}
 	
 }

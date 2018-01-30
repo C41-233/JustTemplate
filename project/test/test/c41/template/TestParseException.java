@@ -83,4 +83,28 @@ public class TestParseException {
 		fail();
 	}
 
+	@Test
+	public void test7() {
+		try {
+			JustTemplate.render("#{elseif ", false);
+		}
+		catch (ResolveException e) {
+			assertEquals(ErrorString.unexpectedEOF(1), e.getMessage());
+			return;
+		}
+		fail();
+	}
+
+	@Test
+	public void test8() {
+		try {
+			JustTemplate.render("#{if .}#{else}#{else}#{endif}", false);
+		}
+		catch (ResolveException e) {
+			assertEquals(ErrorString.unmatchedElse(1, 17), e.getMessage());
+			return;
+		}
+		fail();
+	}
+
 }

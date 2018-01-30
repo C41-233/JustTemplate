@@ -23,7 +23,7 @@ class NullObject implements IObject{
 
 	@Override
 	public IObject getKey(String name, int line, int column) {
-		throw new ResolveException("read property '%s' of null in line %d column %d", name, line, column);
+		throw new ResolveException(ErrorString.readBadPropertyOfType(name, null, line, column));
 	}
 
 	@Override
@@ -75,7 +75,7 @@ class StringObject implements IObject{
 	
 	@Override
 	public IObject getKey(String name, int line, int column) {
-		throw new ResolveException(ErrorString.readBadPropertyOfType("name", value.getClass(), line, column));
+		throw new ResolveException(ErrorString.readBadPropertyOfType(name, value.getClass(), line, column));
 	}
 
 	@Override
@@ -105,7 +105,7 @@ class IntegerObject implements IObject{
 
 	@Override
 	public IObject getKey(String name, int line, int column) {
-		throw new ResolveException("No property %s in class %s", name, value.getClass());
+		throw new ResolveException(ErrorString.readBadPropertyOfType(name, value.getClass(), line, column));
 	}
 
 	@Override
@@ -130,7 +130,7 @@ class DoubleObject implements IObject{
 
 	@Override
 	public IObject getKey(String name, int line, int column) {
-		throw new ResolveException("no property %s in class %s", name, value.getClass().getName());
+		throw new ResolveException(ErrorString.readBadPropertyOfType(name, value.getClass(), line, column));
 	}
 
 	@Override
@@ -155,7 +155,7 @@ class BooleanObject implements IObject{
 
 	@Override
 	public IObject getKey(String name, int line, int column) {
-		throw new ResolveException("read property '%s' in class %s in line %d column %d", name, value.getClass().getName(), line, column);
+		throw new ResolveException(ErrorString.readBadPropertyOfType(name, value.getClass(), line, column));
 	}
 
 	@Override

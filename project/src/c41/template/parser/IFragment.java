@@ -4,6 +4,7 @@ enum FragmentType{
 	Text,
 	Parameter,
 	If,
+	Else,
 	EndIf,
 }
 
@@ -65,6 +66,15 @@ class IfFragment implements IFragment{
 	@Override
 	public FragmentType getType() {
 		return FragmentType.If;
+	}
+	
+}
+
+class ElseFragment implements IFragment{
+
+	@Override
+	public FragmentType getType() {
+		return FragmentType.Else;
 	}
 	
 }
