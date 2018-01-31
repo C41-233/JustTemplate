@@ -1,40 +1,20 @@
 package c41.template.resolver;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import c41.template.internal.util.Buffer;
-import c41.template.internal.util.InputReader;
 import c41.template.internal.util.ErrorString;
+import c41.template.internal.util.InputReader;
 
 public class ReflectResolver implements IResolver{
 
 	private final ArrayList<Context> contexts = new ArrayList<>();
 	
 	public ReflectResolver(Object root) {
-		try {
-			Context context = new Context(ObjectCreator.create(root));
-			if(root != null) {
-				for (Field field : root.getClass().getFields()) {
-					context.addParameter(field.getName(), ObjectCreator.create(field.get(root)));
-				}
-			}
-			push(context);
-		} catch (IllegalArgumentException | IllegalAccessException e) {
-			throw new ResolveException(e);
-		}
-	}
-
-	public ReflectResolver(Map<String, ?> arguments) {
-		Context context = new Context(ObjectCreator.create(arguments));
-		for (Entry<String, ?> entry: arguments.entrySet()) {
-			context.addParameter(entry.getKey(), ObjectCreator.create(entry.getValue()));
-		}
+		Context context = new Context(ObjectCreator.create(root));
 		push(context);
 	}
-	
+
 	@Override
 	public String onVisitParameter(char mark, String name, int line, int column) {
 		IObject object = getParameterObject(current(), name, line, column);
@@ -42,7 +22,7 @@ public class ReflectResolver implements IResolver{
 	}
 
 	@Override
-	public boolean OnVisitCondition(String name, int line, int column) {
+	public boolean onVisitCondition(String name, int line, int column) {
 		IObject object = getParameterObject(current(), name, line, column);
 		return object.asBoolean();
 	}
@@ -78,7 +58,7 @@ public class ReflectResolver implements IResolver{
 
 		@Override
 		public IObject getKey(String name, int line, int column) {
-			return context.getParameter(name);
+			return this.context.getParameter(name, line, column);
 		}
 
 		@Override

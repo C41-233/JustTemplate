@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import c41.template.JustTemplate;
 
-public class TestLogic {
+public class TestCondition {
 
 	@Test
 	public void test1() {
@@ -25,6 +25,15 @@ public class TestLogic {
 		map.put("condition3", true);
 		
 		assertEquals("condition2\n", JustTemplate.render("#{if condition1}condition1\n#{elseif condition2}condition2\n#{elseif condition3}condition3\n#{else}condition4\n#{endif}", map));
+	}
+
+	@Test
+	public void test3() {
+		HashMap<String, Boolean> map = new HashMap<>();
+		map.put("condition1", false);
+		map.put("condition2", true);
+		
+		assertEquals("condition2", JustTemplate.render("#{if condition1}condition1#{else}#{if condition2}condition2#{else}condition3#{endif}#{endif}", map));
 	}
 
 }

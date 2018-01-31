@@ -1,26 +1,24 @@
 package c41.template.resolver;
 
-import java.util.HashMap;
-
 class Context{
 	
 	public final IObject current;
+	private final Context parent;
 	
-	private HashMap<String, IObject> parameters = new HashMap<>();
-	
-	public Context(IObject current) {
-		this.current = current;
+	public Context(IObject object) {
+		this.parent = null;
+		this.current = object;
 	}
 	
-	public IObject getParameter(String name) {
-		IObject obj = parameters.get(name);
-		if(obj == null) {
-			throw new ResolveException("No variable "+name+" in context.");
+	public IObject getParameter(String name, int line, int column) {
+		try {
+			return current.getKey(name, line, column);
+		} catch (ResolveException e) {
+			if(parent != null) {
+				return parent.getParameter(name, line, column);
+			}
+			throw e;
 		}
-		return obj;
 	}
 	
-	public void addParameter(String name, IObject object) {
-		parameters.put(name, object);
-	}
 }

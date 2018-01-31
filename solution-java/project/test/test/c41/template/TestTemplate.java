@@ -37,7 +37,9 @@ public class TestTemplate {
 		assertEquals("value=100", JustTemplate.render("value=${.[value]}", new TestObject1()));
 		assertEquals("value=100", JustTemplate.render("value=${.obj.value}", new TestObject2()));
 		assertEquals("value=100", JustTemplate.render("value=${.obj[value]}", new TestObject2()));
+		assertEquals("value=100", JustTemplate.render("value=${obj.value}", new TestObject2()));
 		assertEquals("value=100", JustTemplate.render("value=${.[obj].value}", new TestObject2()));
+		assertEquals("value=100", JustTemplate.render("value=${[obj][value]}", new TestObject2()));
 		assertEquals("value=100", JustTemplate.render("value=${.[obj][value]}", new TestObject2()));
 		
 		assertEquals("value=100", JustTemplate.render("value=${value}", new TestObject1()));

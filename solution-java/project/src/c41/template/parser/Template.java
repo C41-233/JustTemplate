@@ -86,7 +86,7 @@ class Template implements ITemplate{
 			}
 			case If:{
 				IfFragment fragment = (IfFragment) f;
-				boolean condition = resolve.OnVisitCondition(fragment.name, fragment.line, fragment.column);
+				boolean condition = resolve.onVisitCondition(fragment.name, fragment.line, fragment.column);
 				if(conditionStack.size() > 0) {
 					if(conditionStack.peek() == Condition_True) {
 						conditionStack.push(condition ? Condition_True : Condition_False);

@@ -1,5 +1,7 @@
 package c41.template.resolver;
 
+import java.util.Map;
+
 final class ObjectCreator {
 
 	public static IObject create(Object object) {
@@ -17,6 +19,9 @@ final class ObjectCreator {
 		}
 		if(object instanceof String) {
 			return new StringObject((String) object);
+		}
+		if(object instanceof Map) {
+			return new MapObject((Map<?, ?>) object);
 		}
 		return new ObjectObject(object);
 	}

@@ -4,6 +4,6 @@ public interface IResolver {
 
 	public String onVisitParameter(char mark, String name, int line, int column);
 	
-	public boolean OnVisitCondition(String name, int line, int column);
+	public boolean onVisitCondition(String name, int line, int column);
 	
 }
