@@ -41,8 +41,7 @@ class Template implements ITemplate{
 		if(ifElseStack.size() == 0 || ifElseStack.peek() == MatchElse) {
 			throw new ResolveException(ErrorString.unmatchedElseIf(lineStart, columnStart));
 		}
-		this.fragments.add(new ElseFragment());
-		this.fragments.add(new IfFragment(name, lineParameter, columnParameter));
+		this.fragments.add(new ElseIfFragment(name, lineParameter, columnParameter));
 	}
 	
 	void onEndif(int line, int column) {
@@ -53,7 +52,10 @@ class Template implements ITemplate{
 		ifElseStack.pop();
 	}
 
-	public void end() {
+	public void end(int line) {
+		if(ifElseStack.size() != 0) {
+			throw new ResolveException(ErrorString.unexpectedEOF(line));
+		}
 		fragments.trimToSize();
 	}
 	
@@ -100,6 +102,18 @@ class Template implements ITemplate{
 				}
 				break;
 			}
+			case ElseIf:{
+				ElseIfFragment fragment = (ElseIfFragment) f;
+				boolean condition = resolve.onVisitCondition(fragment.name, fragment.line, fragment.column);
+				int val = conditionStack.pop();
+				if(val == Condition_False) {
+					conditionStack.push(condition ? Condition_True : Condition_False);
+				}
+				else {
+					conditionStack.push(Condition_Ignore);
+				}
+				break;
+			}
 			case Else:{
 				int val = conditionStack.pop();
 				if(val == Condition_False) {
@@ -119,6 +133,10 @@ class Template implements ITemplate{
 				throw new ResolveException();
 			}
 			
+		}
+		
+		if(conditionStack.size() != 0) {
+			throw new ResolveException();
 		}
 		return sb.toString();
 	}

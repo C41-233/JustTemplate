@@ -5,6 +5,7 @@ enum FragmentType{
 	Parameter,
 	If,
 	Else,
+	ElseIf,
 	EndIf,
 }
 
@@ -66,6 +67,25 @@ class IfFragment implements IFragment{
 	@Override
 	public FragmentType getType() {
 		return FragmentType.If;
+	}
+	
+}
+
+class ElseIfFragment implements IFragment{
+
+	public final String name;
+	public final int line;
+	public final int column;
+	
+	public ElseIfFragment(String name, int line, int column) {
+		this.name = name;
+		this.line = line;
+		this.column = column;
+	}
+
+	@Override
+	public FragmentType getType() {
+		return FragmentType.ElseIf;
 	}
 	
 }

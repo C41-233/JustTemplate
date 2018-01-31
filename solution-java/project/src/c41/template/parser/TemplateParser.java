@@ -267,7 +267,7 @@ public class TemplateParser {
 			}
 		}
 		
-		template.end();
+		template.end(reader.getLine());
 		return template;
 	}
 	
