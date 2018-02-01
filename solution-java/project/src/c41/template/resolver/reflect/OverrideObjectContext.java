@@ -1,7 +1,5 @@
 package c41.template.resolver.reflect;
 
-import c41.template.TemplateException;
-
 class OverrideObjectContext implements IContext {
 
 	private final IObject current;
@@ -14,12 +12,7 @@ class OverrideObjectContext implements IContext {
 	
 	@Override
 	public IObject getParameter(String name, int line, int column) {
-		try{
-			return current.getKey(name, line, column);
-		}
-		catch (TemplateException e) {
-			return parent.getParameter(name, line, column);
-		}
+		return parent.getParameter(name, line, column);
 	}
 
 	@Override

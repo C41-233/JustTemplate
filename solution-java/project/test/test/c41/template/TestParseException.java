@@ -3,12 +3,16 @@ package test.c41.template;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Test;
 
 import c41.template.JustTemplate;
 import c41.template.TemplateException;
 import c41.template.internal.util.ErrorString;
 
+@SuppressWarnings("unused")
 public class TestParseException {
 
 	@Test
@@ -99,6 +103,30 @@ public class TestParseException {
 	public void test8() {
 		try {
 			JustTemplate.render("#{if .}#{else}#{else}#{endif}", false);
+		}
+		catch (TemplateException e) {
+			assertEquals(ErrorString.unmatchedElse(1, 17), e.getMessage());
+			return;
+		}
+		fail();
+	}
+
+	private static class Test1{
+		String val;
+		public Test1(int val) {
+			this.val = ""+val+val+val;
+		}
+	}
+	
+	@Test
+	public void test9() {
+		List<Test1> list = new ArrayList<>();
+		list.add(new Test1(1));
+		list.add(new Test1(2));
+		list.add(new Test1(3));
+		
+		try {
+			JustTemplate.render("#{for .}#{for val}${.}#{endfor}#{endfor}", list);
 		}
 		catch (TemplateException e) {
 			assertEquals(ErrorString.unmatchedElse(1, 17), e.getMessage());

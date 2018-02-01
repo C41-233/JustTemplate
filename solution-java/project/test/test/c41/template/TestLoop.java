@@ -30,9 +30,11 @@ public class TestLoop {
 	
 	private static class Test1{
 		int val;
+		String string;
 		
 		public Test1(int val) {
 			this.val = val;
+			this.string = ""+val+val+val;
 		}
 	}
 	
@@ -42,7 +44,10 @@ public class TestLoop {
 		list.add(new Test1(1));
 		list.add(new Test1(2));
 		list.add(new Test1(3));
+		
 		assertEquals("123", JustTemplate.render("#{for .}${.val}#{endfor}", list));
+		assertEquals("111222333", JustTemplate.render("#{for .}${.string}#{endfor}", list));
+		assertEquals("111222333", JustTemplate.render("#{for .}#{for .string}${.}#{endfor}#{endfor}", list));
 	}
 	
 /*
