@@ -6,8 +6,8 @@ import static org.junit.Assert.fail;
 import org.junit.Test;
 
 import c41.template.JustTemplate;
+import c41.template.TemplateException;
 import c41.template.internal.util.ErrorString;
-import c41.template.resolver.ResolveException;
 
 @SuppressWarnings("unused")
 public class TestResolveException {
@@ -21,7 +21,7 @@ public class TestResolveException {
 		try {
 			JustTemplate.render("${.value}", false);
 		}
-		catch (ResolveException e) {
+		catch (TemplateException e) {
 			assertEquals(ErrorString.readBadPropertyOfType("value", Boolean.class, 1, 4), e.getMessage());
 			return;
 		}
@@ -33,7 +33,7 @@ public class TestResolveException {
 		try {
 			JustTemplate.render("${.value.value}", new Test1());
 		}
-		catch (ResolveException e) {
+		catch (TemplateException e) {
 			assertEquals(ErrorString.readBadPropertyOfType("value", String.class, 1, 10), e.getMessage());
 			return;
 		}
@@ -45,7 +45,7 @@ public class TestResolveException {
 		try {
 			JustTemplate.render("${.value[value]}", new Test1());
 		}
-		catch (ResolveException e) {
+		catch (TemplateException e) {
 			assertEquals(ErrorString.readBadPropertyOfType("value", String.class, 1, 10), e.getMessage());
 			return;
 		}
@@ -57,7 +57,7 @@ public class TestResolveException {
 		try {
 			JustTemplate.render("${.value[value]}", "12345");
 		}
-		catch (ResolveException e) {
+		catch (TemplateException e) {
 			assertEquals(ErrorString.readBadPropertyOfType("value", String.class, 1, 4), e.getMessage());
 			return;
 		}

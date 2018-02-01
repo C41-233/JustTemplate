@@ -3,7 +3,7 @@ package c41.template.resolver.reflect;
 import java.lang.reflect.Field;
 import java.util.Iterator;
 
-import c41.template.resolver.ResolveException;
+import c41.template.TemplateException;
 
 class ObjectObject implements IObject{
 
@@ -20,7 +20,7 @@ class ObjectObject implements IObject{
 			field.setAccessible(true);
 			return ObjectCreator.create(field.get(object));
 		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-			throw new ResolveException(e);
+			throw new TemplateException(e);
 		}
 	}
 

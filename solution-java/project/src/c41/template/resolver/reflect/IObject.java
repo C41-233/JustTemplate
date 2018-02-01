@@ -10,5 +10,5 @@ interface IObject {
 
 	public boolean asBoolean();
 
-	public Iterator<Object> asIterator();
+	public Iterator<?> asIterator();
 }

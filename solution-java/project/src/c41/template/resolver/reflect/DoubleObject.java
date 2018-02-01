@@ -2,8 +2,8 @@ package c41.template.resolver.reflect;
 
 import java.util.Iterator;
 
+import c41.template.TemplateException;
 import c41.template.internal.util.ErrorString;
-import c41.template.resolver.ResolveException;
 
 class DoubleObject implements IObject{
 
@@ -20,7 +20,7 @@ class DoubleObject implements IObject{
 
 	@Override
 	public IObject getKey(String name, int line, int column) {
-		throw new ResolveException(ErrorString.readBadPropertyOfType(name, value.getClass(), line, column));
+		throw new TemplateException(ErrorString.readBadPropertyOfType(name, value.getClass(), line, column));
 	}
 
 	@Override

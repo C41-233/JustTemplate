@@ -4,20 +4,20 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Stack;
 
+import c41.template.TemplateException;
 import c41.template.internal.util.ErrorString;
 import c41.template.internal.util.FastStack;
-import c41.template.resolver.ResolveException;
 import c41.template.resolver.reflect.IResolver;
-import sun.java2d.pipe.LoopPipe;
 
 class Template implements ITemplate{
 
 	private final ArrayList<IFragment> fragments = new ArrayList<>();
 	
 	private FastStack logicStack = new FastStack();
-	private final int MatchIf = 0;
-	private final int MatchElse = 1;
-	private final int MatchFor = 2;
+	
+	public Template() {
+		logicStack.push(LogicMatch.MatchAll);
+	}
 	
 	void onText(String string) {
 		this.fragments.add(new TextFragment(string));
@@ -29,28 +29,28 @@ class Template implements ITemplate{
 
 	void onIf(String name, int lineStart, int columnStart, int lineParameter, int columnParameter) {
 		this.fragments.add(new IfFragment(name, lineParameter, columnParameter));
-		logicStack.push(MatchIf);
+		logicStack.push(LogicMatch.MatchIf);
 	}
 
 	void onElse(int line, int column) {
-		if(logicStack.size() == 0 || logicStack.peek() != MatchIf) {
-			throw new ResolveException(ErrorString.unmatchedElse(line, column));
+		if(logicStack.peek() != LogicMatch.MatchIf) {
+			throw new TemplateException(ErrorString.unmatchedElse(line, column));
 		}
 		logicStack.pop();
-		logicStack.push(MatchElse);
+		logicStack.push(LogicMatch.MatchElse);
 		this.fragments.add(new ElseFragment());
 	}
 
 	void onElseIf(String name, int lineStart, int columnStart, int lineParameter, int columnParameter) {
-		if(logicStack.size() == 0 || logicStack.peek() != MatchIf) {
-			throw new ResolveException(ErrorString.unmatchedElseIf(lineStart, columnStart));
+		if(logicStack.peek() != LogicMatch.MatchIf) {
+			throw new TemplateException(ErrorString.unmatchedElseIf(lineStart, columnStart));
 		}
 		this.fragments.add(new ElseIfFragment(name, lineParameter, columnParameter));
 	}
 	
 	void onEndif(int line, int column) {
-		if(logicStack.size() == 0 || (logicStack.peek() != MatchIf && logicStack.peek() != MatchElse)) {
-			throw new ResolveException(ErrorString.unmatchedEndIf(line, column));
+		if(logicStack.peek() != LogicMatch.MatchIf && logicStack.peek() != LogicMatch.MatchElse) {
+			throw new TemplateException(ErrorString.unmatchedEndIf(line, column));
 		}
 		this.fragments.add(new EndIfFragment());
 		logicStack.pop();
@@ -58,20 +58,20 @@ class Template implements ITemplate{
 
 	public void onFor(String name, int lineStart, int columnStart, int lineParameter, int columnParameter) {
 		this.fragments.add(new ForFragment(name, null, null));
-		logicStack.push(MatchFor);
+		logicStack.push(LogicMatch.MatchFor);
 	}
 
 	public void onEndFor(int line, int column) {
-		if(logicStack.size() == 0 || logicStack.peek() != MatchFor) {
-			throw new ResolveException(ErrorString.unmatchedEndFor(line, column));
+		if(logicStack.peek() != LogicMatch.MatchFor) {
+			throw new TemplateException(ErrorString.unmatchedEndFor(line, column));
 		}
 		this.fragments.add(new EndForFragment());
 		logicStack.pop();
 	}
 	
 	public void end(int line) {
-		if(logicStack.size() != 0) {
-			throw new ResolveException(ErrorString.unexpectedEOF(line));
+		if(logicStack.size() != 1) {
+			throw new TemplateException(ErrorString.unexpectedEOF(line));
 		}
 		fragments.trimToSize();
 	}
@@ -152,7 +152,7 @@ class Template implements ITemplate{
 				}
 				ForFragment fragment = (ForFragment) f;
 				if(fragment.key == null) {
-					Iterator<Object> iterator = resolve.onVisitLoop(fragment.name, fragment.line, fragment.column);
+					Iterator<?> iterator = resolve.onVisitLoop(fragment.name, fragment.line, fragment.column);
 					if(iterator.hasNext()) {
 						Object context = iterator.next();
 						if(fragment.value == null) {
@@ -197,13 +197,13 @@ class Template implements ITemplate{
 			}
 			
 			default:
-				throw new ResolveException("state %s", f.getType());
+				throw new TemplateException("state %s", f.getType());
 			}
 			
 		}
 		
 		if(conditionStack.size() != 1) {
-			throw new ResolveException();
+			throw new TemplateException();
 		}
 		return sb.toString();
 	}
@@ -211,11 +211,11 @@ class Template implements ITemplate{
 	private static class LoopContext{
 		
 		public final int start;
-		public final Iterator<Object> iterator;
+		public final Iterator<?> iterator;
 		public final String key;
 		public final String value;
 		
-		public LoopContext(int start, Iterator<Object> iterator, String key, String value) {
+		public LoopContext(int start, Iterator<?> iterator, String key, String value) {
 			this.start = start;
 			this.iterator = iterator;
 			this.key = key;
@@ -223,4 +223,13 @@ class Template implements ITemplate{
 		}
 	}
 
+	private static interface LogicMatch{
+
+		public static final int MatchAll = 0;
+		public static final int MatchIf = 1;
+		public static final int MatchElse = 2;
+		public static final int MatchFor = 3;
+		
+	}
+	
 }

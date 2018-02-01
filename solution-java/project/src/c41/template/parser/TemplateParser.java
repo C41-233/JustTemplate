@@ -1,10 +1,10 @@
 package c41.template.parser;
 
+import c41.template.TemplateException;
 import c41.template.internal.util.ArrayUtil;
 import c41.template.internal.util.Buffer;
 import c41.template.internal.util.ErrorString;
 import c41.template.internal.util.InputReader;
-import c41.template.resolver.ResolveException;
 
 public class TemplateParser {
 
@@ -86,7 +86,7 @@ public class TemplateParser {
 					state = ParseState.ReadText;
 				}
 				else if(ch == InputReader.EOF) {
-					throw new ResolveException(ErrorString.unexpectedEOF(reader.getLine()));
+					throw new TemplateException(ErrorString.unexpectedEOF(reader.getLine()));
 				}
 				break;
 			}
@@ -98,7 +98,7 @@ public class TemplateParser {
 					state = ParseState.ReadText;
 				}
 				else if(ch == InputReader.EOF) {
-					throw new ResolveException(ErrorString.unexpectedEOF(reader.getLine()));
+					throw new TemplateException(ErrorString.unexpectedEOF(reader.getLine()));
 				}
 				else {
 					buffer.append(ch);
@@ -147,7 +147,7 @@ public class TemplateParser {
 			case ReadLogicWord:{
 				if(Character.isWhitespace(ch) || ch==CloseMatch) {
 					if(buffer.length() == 0) {
-						throw new ResolveException(ErrorString.emptyLogicWord(reader.getLine(), reader.getColumn()-1));
+						throw new TemplateException(ErrorString.emptyLogicWord(reader.getLine(), reader.getColumn()-1));
 					}
 					String word = buffer.take();
 					switch (word) {
@@ -173,12 +173,12 @@ public class TemplateParser {
 						template.onEndFor(reader.getLine(), currentLogicWordPos);
 						break;
 					default:
-						throw new ResolveException(ErrorString.unrecognizedLogicWord(word, reader.getLine(), reader.getColumn() - word.length()));
+						throw new TemplateException(ErrorString.unrecognizedLogicWord(word, reader.getLine(), reader.getColumn() - word.length()));
 					}
 					reader.pushBack();
 				}
 				else if(ch == InputReader.EOF) {
-					throw new ResolveException(ErrorString.unexpectedEOF(reader.getLine()));
+					throw new TemplateException(ErrorString.unexpectedEOF(reader.getLine()));
 				}
 				else {
 					buffer.append(ch);
@@ -191,14 +191,14 @@ public class TemplateParser {
 					state = ParseState.ReadLogicWord_IF_Whitespace;
 				}
 				else {
-					throw new ResolveException(ErrorString.unexpectedCharacterAfter(ch, "if", reader.getLine(), reader.getColumn()));
+					throw new TemplateException(ErrorString.unexpectedCharacterAfter(ch, "if", reader.getLine(), reader.getColumn()));
 				}
 				break;
 			}
 
 			case ReadLogicWord_IF_Whitespace:{
 				if(ch == InputReader.EOF) {
-					throw new ResolveException(ErrorString.unexpectedEOF(reader.getLine()));
+					throw new TemplateException(ErrorString.unexpectedEOF(reader.getLine()));
 				}
 				else if(!Character.isWhitespace(ch)) {
 					buffer.append(ch);
@@ -214,7 +214,7 @@ public class TemplateParser {
 					template.onIf(word, reader.getLine(), currentLogicWordPos, reader.getLine(), reader.getColumn()-word.length());
 				}
 				else if(ch == InputReader.EOF) {
-					throw new ResolveException(ErrorString.unexpectedEOF(reader.getLine()));
+					throw new TemplateException(ErrorString.unexpectedEOF(reader.getLine()));
 				}
 				else {
 					buffer.append(ch);
@@ -227,14 +227,14 @@ public class TemplateParser {
 					state = ParseState.ReadLogicWord_ElseIf_Whitespace;
 				}
 				else {
-					throw new ResolveException(ErrorString.unexpectedCharacterAfter(ch, "elseif", reader.getLine(), reader.getColumn()));
+					throw new TemplateException(ErrorString.unexpectedCharacterAfter(ch, "elseif", reader.getLine(), reader.getColumn()));
 				}
 				break;
 			}
 			
 			case ReadLogicWord_ElseIf_Whitespace:{
 				if(ch == InputReader.EOF) {
-					throw new ResolveException(ErrorString.unexpectedEOF(reader.getLine()));
+					throw new TemplateException(ErrorString.unexpectedEOF(reader.getLine()));
 				}
 				else if(!Character.isWhitespace(ch)) {
 					buffer.append(ch);
@@ -250,7 +250,7 @@ public class TemplateParser {
 					template.onElseIf(word, reader.getLine(), currentLogicWordPos, reader.getLine(), reader.getColumn()-word.length());
 				}
 				else if(ch == InputReader.EOF) {
-					throw new ResolveException(ErrorString.unexpectedEOF(reader.getLine()));
+					throw new TemplateException(ErrorString.unexpectedEOF(reader.getLine()));
 				}
 				else {
 					buffer.append(ch);
@@ -263,10 +263,10 @@ public class TemplateParser {
 					state = ParseState.ReadText;
 				}
 				else if(ch == InputReader.EOF) {
-					throw new ResolveException(ErrorString.unexpectedEOF(reader.getLine()));
+					throw new TemplateException(ErrorString.unexpectedEOF(reader.getLine()));
 				}
 				else {
-					throw new ResolveException();
+					throw new TemplateException();
 				}
 				break;
 			}
@@ -277,14 +277,14 @@ public class TemplateParser {
 					reader.pushBack();
 				}
 				else {
-					throw new ResolveException(ErrorString.unexpectedCharacterAfter(ch, "for", reader.getLine(), reader.getColumn()));
+					throw new TemplateException(ErrorString.unexpectedCharacterAfter(ch, "for", reader.getLine(), reader.getColumn()));
 				}
 				break;
 			}
 			
 			case ReadLogicWord_For_Whitespace1:{
 				if(ch == InputReader.EOF) {
-					throw new ResolveException(ErrorString.unexpectedEOF(reader.getLine()));
+					throw new TemplateException(ErrorString.unexpectedEOF(reader.getLine()));
 				}
 				else if(!Character.isWhitespace(ch)) {
 					buffer.append(ch);
@@ -300,7 +300,7 @@ public class TemplateParser {
 					template.onFor(word, reader.getLine(), currentLogicWordPos, reader.getLine(), reader.getColumn()-word.length());
 				}
 				else if(ch == InputReader.EOF) {
-					throw new ResolveException(ErrorString.unexpectedEOF(reader.getLine()));
+					throw new TemplateException(ErrorString.unexpectedEOF(reader.getLine()));
 				}
 				else if(Character.isWhitespace(ch)) {
 					state = ParseState.ReadLogicWord_For_Whitespace2;
@@ -312,7 +312,7 @@ public class TemplateParser {
 			}
 			
 			default:
-				throw new ResolveException("state: %s", state);
+				throw new TemplateException("state: %s", state);
 			}
 		}
 		

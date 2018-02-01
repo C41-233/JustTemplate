@@ -8,7 +8,7 @@ public interface IResolver {
 	
 	public boolean onVisitCondition(String name, int line, int column);
 
-	public Iterator<Object> onVisitLoop(String name, int line, int column);
+	public Iterator<?> onVisitLoop(String name, int line, int column);
 	
 	public void createContext(Object current);
 	

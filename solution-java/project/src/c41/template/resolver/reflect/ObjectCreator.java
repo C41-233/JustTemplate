@@ -1,5 +1,6 @@
 package c41.template.resolver.reflect;
 
+import java.util.List;
 import java.util.Map;
 
 final class ObjectCreator {
@@ -22,6 +23,9 @@ final class ObjectCreator {
 		}
 		if(object instanceof Map) {
 			return new MapObject((Map<?, ?>) object);
+		}
+		if(object instanceof List) {
+			return new ListObject((List<?>) object);
 		}
 		return new ObjectObject(object);
 	}

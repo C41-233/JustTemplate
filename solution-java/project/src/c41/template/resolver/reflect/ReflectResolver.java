@@ -1,22 +1,28 @@
 package c41.template.resolver.reflect;
 
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Stack;
 
+import c41.template.TemplateException;
 import c41.template.internal.util.Buffer;
 import c41.template.internal.util.ErrorString;
 import c41.template.internal.util.InputReader;
-import c41.template.resolver.ResolveException;
 
 public class ReflectResolver implements IResolver{
 
-	private final Stack<Context> contexts = new Stack<>();
+	private final Stack<IContext> contexts = new Stack<>();
 	
-	public ReflectResolver(Object root) {
-		Context context = new Context(ObjectCreator.create(root));
+	public ReflectResolver(Object object) {
+		IContext context = new RootObjectContext(object);
 		contexts.push(context);
 	}
 
+	public ReflectResolver(Map<String, ?> parameters) {
+		IContext context = new RootMapContext(parameters);
+		contexts.push(context);
+	}
+	
 	@Override
 	public String onVisitParameter(char mark, String name, int line, int column) {
 		IObject object = getParameterObject(contexts.peek(), name, line, column);
@@ -30,20 +36,20 @@ public class ReflectResolver implements IResolver{
 	}
 
 	@Override
-	public Iterator<Object> onVisitLoop(String name, int line, int column) {
+	public Iterator<?> onVisitLoop(String name, int line, int column) {
 		IObject object = getParameterObject(contexts.peek(), name, line, column);
 		return object.asIterator();
 	}
 
 	@Override
 	public void createContext(Object current) {
-		Context context = new Context(ObjectCreator.create(current), contexts.peek());
+		IContext context = new OverrideObjectContext(current, contexts.peek());
 		contexts.push(context);
 	}
 
 	@Override
-	public void createContext(String name, Object current) {
-		Context context = new Context(name, ObjectCreator.create(current), contexts.peek());
+	public void createContext(String name, Object value) {
+		IContext context = new OverrideParameterObject(name, value, contexts.peek());
 		contexts.push(context);
 	}
 
@@ -52,37 +58,7 @@ public class ReflectResolver implements IResolver{
 		contexts.pop();
 	}
 
-	private static class ContextObject implements IObject{
-
-		private final Context context;
-		
-		public ContextObject(Context context) {
-			this.context = context;
-		}
-		
-		@Override
-		public String asString() {
-			throw new ResolveException();
-		}
-
-		@Override
-		public IObject getKey(String name, int line, int column) {
-			return this.context.getParameter(name, line, column);
-		}
-
-		@Override
-		public boolean asBoolean() {
-			throw new ResolveException();
-		}
-
-		@Override
-		public Iterator<Object> asIterator() {
-			throw new ResolveException();
-		}
-		
-	}
-	
-	private static IObject getParameterObject(Context context, String name, int line, int column) {
+	private static IObject getParameterObject(IContext context, String name, int line, int column) {
 		Buffer buffer = new Buffer();
 		InputReader reader = new InputReader(name);
 		
@@ -96,7 +72,7 @@ public class ReflectResolver implements IResolver{
 			
 			case Start:{
 				if(ch == '.') {
-					root = context.current;
+					root = context.getContextObject();
 					state = ReflectResolverState.StartReadPart;
 				}
 				else if(ch == '['){
@@ -104,7 +80,7 @@ public class ReflectResolver implements IResolver{
 					state = ReflectResolverState.ReadFullPart;
 				}
 				else if(ch == InputReader.EOF) {
-					throw new ResolveException(ErrorString.unexpectedEndOfParameter(line, column));
+					throw new TemplateException(ErrorString.unexpectedEndOfParameter(line, column));
 				}
 				else {
 					root = new ContextObject(context);
@@ -131,7 +107,7 @@ public class ReflectResolver implements IResolver{
 			case ReadPart:{
 				if(ch == '.') {
 					if(buffer.length() == 0) {
-						throw new ResolveException();
+						throw new TemplateException();
 					}
 					String part = buffer.take();
 					root = root.getKey(part, line, column + reader.getColumn() - part.length());
@@ -140,7 +116,7 @@ public class ReflectResolver implements IResolver{
 				}
 				else if(ch == '[') {
 					if(buffer.length() == 0) {
-						throw new ResolveException();
+						throw new TemplateException();
 					}
 					String part = buffer.take();
 					root = root.getKey(part, line, column + reader.getColumn() - part.length() - 1);
@@ -149,7 +125,7 @@ public class ReflectResolver implements IResolver{
 				}
 				else if(ch == InputReader.EOF) {
 					if(buffer.length() == 0) {
-						throw new ResolveException();
+						throw new TemplateException();
 					}
 					String part = buffer.take();
 					root = root.getKey(part, line, column + reader.getColumn() - part.length());
@@ -164,14 +140,14 @@ public class ReflectResolver implements IResolver{
 			case ReadFullPart:{
 				if(ch == ']') {
 					if(buffer.length() == 0) {
-						throw new ResolveException();
+						throw new TemplateException();
 					}
 					String part = buffer.take();
 					root = root.getKey(part, line, column + reader.getColumn() - part.length() - 1);
 					state = ReflectResolverState.EndPart;
 				}
 				else if(ch == InputReader.EOF) {
-					throw new ResolveException(ErrorString.unexpectedEndOfParameter(line, column));
+					throw new TemplateException(ErrorString.unexpectedEndOfParameter(line, column));
 				}
 				else {
 					buffer.append(ch);
@@ -190,21 +166,51 @@ public class ReflectResolver implements IResolver{
 					break Read;
 				}
 				else {
-					throw new ResolveException("unexpected character %c", ch);
+					throw new TemplateException("unexpected character %c", ch);
 				}
 				break;
 			}
 			
 			default:
-				throw new ResolveException();
+				throw new TemplateException();
 			}
 		}
 		
 		if(root == null) {
-			throw new ResolveException();
+			throw new TemplateException();
 		}
 		
 		return root;
 	}
 
+}
+
+class ContextObject implements IObject{
+
+	private final IContext context;
+	
+	public ContextObject(IContext context) {
+		this.context = context;
+	}
+	
+	@Override
+	public String asString() {
+		throw new TemplateException();
+	}
+
+	@Override
+	public IObject getKey(String name, int line, int column) {
+		return this.context.getParameter(name, line, column);
+	}
+
+	@Override
+	public boolean asBoolean() {
+		throw new TemplateException();
+	}
+
+	@Override
+	public Iterator<Object> asIterator() {
+		throw new TemplateException();
+	}
+	
 }
