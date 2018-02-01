@@ -47,6 +47,10 @@ public class TemplateParser {
 		int currentTemplatePrefix = 0;
 		int currentLogicWordPos = 0;
 
+		String forParameter1 = null;
+		String forParameter2 = null;
+		String forParameter3 = null;
+		
 		MainLoop:
 		while(true) {
 			int ch = reader.read();
@@ -161,6 +165,13 @@ public class TemplateParser {
 					case "elseif":
 						state = ParseState.EndLogicWord_ElseIf;
 						break;
+					case "for":
+						state = ParseState.EndLogicWord_For;
+						break;
+					case "endfor":
+						state = ParseState.WaitLogicWordCloseMatch;
+						template.onEndFor(reader.getLine(), currentLogicWordPos);
+						break;
 					default:
 						throw new ResolveException(ErrorString.unrecognizedLogicWord(word, reader.getLine(), reader.getColumn() - word.length()));
 					}
@@ -178,7 +189,6 @@ public class TemplateParser {
 			case EndLogicWord_IF:{
 				if(Character.isWhitespace(ch)) {
 					state = ParseState.ReadLogicWord_IF_Whitespace;
-					reader.pushBack();
 				}
 				else {
 					throw new ResolveException(ErrorString.unexpectedCharacterAfter(ch, "if", reader.getLine(), reader.getColumn()));
@@ -215,7 +225,6 @@ public class TemplateParser {
 			case EndLogicWord_ElseIf:{
 				if(Character.isWhitespace(ch)) {
 					state = ParseState.ReadLogicWord_ElseIf_Whitespace;
-					reader.pushBack();
 				}
 				else {
 					throw new ResolveException(ErrorString.unexpectedCharacterAfter(ch, "elseif", reader.getLine(), reader.getColumn()));
@@ -262,8 +271,48 @@ public class TemplateParser {
 				break;
 			}
 			
+			case EndLogicWord_For:{
+				if(Character.isWhitespace(ch)) {
+					state = ParseState.ReadLogicWord_For_Whitespace1;
+					reader.pushBack();
+				}
+				else {
+					throw new ResolveException(ErrorString.unexpectedCharacterAfter(ch, "for", reader.getLine(), reader.getColumn()));
+				}
+				break;
+			}
+			
+			case ReadLogicWord_For_Whitespace1:{
+				if(ch == InputReader.EOF) {
+					throw new ResolveException(ErrorString.unexpectedEOF(reader.getLine()));
+				}
+				else if(!Character.isWhitespace(ch)) {
+					buffer.append(ch);
+					state = ParseState.ReadLogicWord_For_Parameter1;
+				}
+				break;
+			}
+			
+			case ReadLogicWord_For_Parameter1:{
+				if(ch == CloseMatch) {
+					state = ParseState.ReadText;
+					String word = buffer.take();
+					template.onFor(word, reader.getLine(), currentLogicWordPos, reader.getLine(), reader.getColumn()-word.length());
+				}
+				else if(ch == InputReader.EOF) {
+					throw new ResolveException(ErrorString.unexpectedEOF(reader.getLine()));
+				}
+				else if(Character.isWhitespace(ch)) {
+					state = ParseState.ReadLogicWord_For_Whitespace2;
+				}
+				else {
+					buffer.append(ch);
+				}
+				break;
+			}
+			
 			default:
-				throw new ResolveException();
+				throw new ResolveException("state: %s", state);
 			}
 		}
 		

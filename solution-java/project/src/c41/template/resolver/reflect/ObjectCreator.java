@@ -1,4 +1,4 @@
-package c41.template.resolver;
+package c41.template.resolver.reflect;
 
 import java.util.Map;
 

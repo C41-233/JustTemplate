@@ -7,6 +7,8 @@ enum FragmentType{
 	Else,
 	ElseIf,
 	EndIf,
+	For,
+	EndFor
 }
 
 interface IFragment {
@@ -104,6 +106,37 @@ class EndIfFragment implements IFragment{
 	@Override
 	public FragmentType getType() {
 		return FragmentType.EndIf;
+	}
+	
+}
+
+class ForFragment implements IFragment{
+	
+	public final String name;
+	public final String key;
+	public final String value;
+	
+	public int line;
+	public int column;
+	
+	public ForFragment(String name, String key, String value) {
+		this.name = name;
+		this.key = key;
+		this.value = value;
+	}
+
+	@Override
+	public FragmentType getType() {
+		return FragmentType.For;
+	}
+	
+}
+
+class EndForFragment implements IFragment{
+
+	@Override
+	public FragmentType getType() {
+		return FragmentType.EndFor;
 	}
 	
 }

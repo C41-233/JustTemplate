@@ -32,6 +32,10 @@ public final class ErrorString {
 		return String.format("elseif without match if in line %d column %d", line, column);
 	}
 
+	public static String unmatchedEndFor(int line, int column) {
+		return String.format("endfor without match for in line %d column %d", line, column);
+	}
+	
 	public static String readBadPropertyOfType(String name, Class<?> cl, int line, int column) {
 		if(cl != null) {
 			return String.format("read property '%s' of class %s in line %d column %d", name, cl.getName(), line, column);
@@ -44,5 +48,5 @@ public final class ErrorString {
 	public static String unexpectedEOF(int line) {
 		return String.format("unexpected eof in line %d", line);
 	}
-	
+
 }

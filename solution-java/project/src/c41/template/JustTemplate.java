@@ -6,8 +6,8 @@ import java.nio.file.Files;
 
 import c41.template.parser.ITemplate;
 import c41.template.parser.TemplateParser;
-import c41.template.resolver.IResolver;
-import c41.template.resolver.ReflectResolver;
+import c41.template.resolver.reflect.IResolver;
+import c41.template.resolver.reflect.ReflectResolver;
 
 public final class JustTemplate {
 

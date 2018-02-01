@@ -1,4 +1,6 @@
-package c41.template.resolver;
+package c41.template.resolver.reflect;
+
+import java.util.Iterator;
 
 interface IObject {
 
@@ -7,4 +9,6 @@ interface IObject {
 	public IObject getKey(String name, int line, int column);
 
 	public boolean asBoolean();
+
+	public Iterator<Object> asIterator();
 }

@@ -1,6 +1,9 @@
-package c41.template.resolver;
+package c41.template.resolver.reflect;
+
+import java.util.Iterator;
 
 import c41.template.internal.util.ErrorString;
+import c41.template.resolver.ResolveException;
 
 class BooleanObject implements IObject{
 
@@ -23,6 +26,12 @@ class BooleanObject implements IObject{
 	@Override
 	public boolean asBoolean() {
 		return value;
+	}
+
+	@Override
+	public Iterator<Object> asIterator() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 }

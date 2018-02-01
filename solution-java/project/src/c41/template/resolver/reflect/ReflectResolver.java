@@ -1,48 +1,57 @@
-package c41.template.resolver;
+package c41.template.resolver.reflect;
 
-import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Stack;
 
 import c41.template.internal.util.Buffer;
 import c41.template.internal.util.ErrorString;
 import c41.template.internal.util.InputReader;
+import c41.template.resolver.ResolveException;
 
 public class ReflectResolver implements IResolver{
 
-	private final ArrayList<Context> contexts = new ArrayList<>();
+	private final Stack<Context> contexts = new Stack<>();
 	
 	public ReflectResolver(Object root) {
 		Context context = new Context(ObjectCreator.create(root));
-		push(context);
+		contexts.push(context);
 	}
 
 	@Override
 	public String onVisitParameter(char mark, String name, int line, int column) {
-		IObject object = getParameterObject(current(), name, line, column);
+		IObject object = getParameterObject(contexts.peek(), name, line, column);
 		return object.asString();
 	}
 
 	@Override
 	public boolean onVisitCondition(String name, int line, int column) {
-		IObject object = getParameterObject(current(), name, line, column);
+		IObject object = getParameterObject(contexts.peek(), name, line, column);
 		return object.asBoolean();
 	}
-	
-	private static enum ObjectState{
-		Start,
-		StartReadPart,
-		ReadPart,
-		ReadFullPart,
-		EndPart,
+
+	@Override
+	public Iterator<Object> onVisitLoop(String name, int line, int column) {
+		IObject object = getParameterObject(contexts.peek(), name, line, column);
+		return object.asIterator();
 	}
 
-	private Context current() {
-		return contexts.get(contexts.size() - 1);
+	@Override
+	public void createContext(Object current) {
+		Context context = new Context(ObjectCreator.create(current), contexts.peek());
+		contexts.push(context);
 	}
-	
-	private void push(Context context) {
-		contexts.add(context);
+
+	@Override
+	public void createContext(String name, Object current) {
+		Context context = new Context(name, ObjectCreator.create(current), contexts.peek());
+		contexts.push(context);
 	}
-	
+
+	@Override
+	public void releaseContext() {
+		contexts.pop();
+	}
+
 	private static class ContextObject implements IObject{
 
 		private final Context context;
@@ -65,6 +74,11 @@ public class ReflectResolver implements IResolver{
 		public boolean asBoolean() {
 			throw new ResolveException();
 		}
+
+		@Override
+		public Iterator<Object> asIterator() {
+			throw new ResolveException();
+		}
 		
 	}
 	
@@ -74,7 +88,7 @@ public class ReflectResolver implements IResolver{
 		
 		IObject root = null;
 		
-		ObjectState state = ObjectState.Start;
+		ReflectResolverState state = ReflectResolverState.Start;
 		Read:while(true) {
 			int ch = reader.read();
 			
@@ -83,11 +97,11 @@ public class ReflectResolver implements IResolver{
 			case Start:{
 				if(ch == '.') {
 					root = context.current;
-					state = ObjectState.StartReadPart;
+					state = ReflectResolverState.StartReadPart;
 				}
 				else if(ch == '['){
 					root = new ContextObject(context);
-					state = ObjectState.ReadFullPart;
+					state = ReflectResolverState.ReadFullPart;
 				}
 				else if(ch == InputReader.EOF) {
 					throw new ResolveException(ErrorString.unexpectedEndOfParameter(line, column));
@@ -95,21 +109,21 @@ public class ReflectResolver implements IResolver{
 				else {
 					root = new ContextObject(context);
 					buffer.append(ch);
-					state = ObjectState.ReadPart;
+					state = ReflectResolverState.ReadPart;
 				}
 				break;
 			}
 			
 			case StartReadPart:{
 				if(ch == '[') {
-					state = ObjectState.ReadFullPart;
+					state = ReflectResolverState.ReadFullPart;
 				}
 				else if(ch == InputReader.EOF) {
 					break Read;
 				}
 				else {
 					reader.pushBack();
-					state = ObjectState.ReadPart;
+					state = ReflectResolverState.ReadPart;
 				}
 				break;
 			}
@@ -122,7 +136,7 @@ public class ReflectResolver implements IResolver{
 					String part = buffer.take();
 					root = root.getKey(part, line, column + reader.getColumn() - part.length());
 					reader.pushBack();
-					state = ObjectState.EndPart;
+					state = ReflectResolverState.EndPart;
 				}
 				else if(ch == '[') {
 					if(buffer.length() == 0) {
@@ -131,7 +145,7 @@ public class ReflectResolver implements IResolver{
 					String part = buffer.take();
 					root = root.getKey(part, line, column + reader.getColumn() - part.length() - 1);
 					reader.pushBack();
-					state = ObjectState.EndPart;
+					state = ReflectResolverState.EndPart;
 				}
 				else if(ch == InputReader.EOF) {
 					if(buffer.length() == 0) {
@@ -154,7 +168,7 @@ public class ReflectResolver implements IResolver{
 					}
 					String part = buffer.take();
 					root = root.getKey(part, line, column + reader.getColumn() - part.length() - 1);
-					state = ObjectState.EndPart;
+					state = ReflectResolverState.EndPart;
 				}
 				else if(ch == InputReader.EOF) {
 					throw new ResolveException(ErrorString.unexpectedEndOfParameter(line, column));
@@ -167,10 +181,10 @@ public class ReflectResolver implements IResolver{
 			
 			case EndPart:{
 				if(ch == '.') {
-					state = ObjectState.ReadPart;
+					state = ReflectResolverState.ReadPart;
 				}
 				else if(ch == '['){
-					state = ObjectState.ReadFullPart;
+					state = ReflectResolverState.ReadFullPart;
 				}
 				else if(ch == InputReader.EOF) {
 					break Read;

@@ -1,5 +1,6 @@
-package c41.template.resolver;
+package c41.template.resolver.reflect;
 
+import java.util.Iterator;
 import java.util.Map;
 
 class MapObject implements IObject{
@@ -23,6 +24,12 @@ class MapObject implements IObject{
 	@Override
 	public boolean asBoolean() {
 		return value.size() > 0;
+	}
+
+	@Override
+	public Iterator<Object> asIterator() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
