@@ -156,10 +156,10 @@ class Template implements ITemplate{
 					if(iterator.hasNext()) {
 						Object context = iterator.next();
 						if(fragment.value == null) {
-							resolve.createContext(context);
+							resolve.enterContext(context);
 						}
 						else {
-							resolve.createContext(fragment.value, context);
+							resolve.enterContext(fragment.value, context);
 						}
 					}
 					loopStack.push(new LoopContext(i, iterator, fragment.key, fragment.value));
@@ -173,19 +173,19 @@ class Template implements ITemplate{
 				}
 				LoopContext loop = loopStack.peek();
 				if(loop.iterator.hasNext()) {
-					resolve.releaseContext();
+					resolve.leaveContext();
 					if(loop.key != null) {
-						resolve.releaseContext();
+						resolve.leaveContext();
 					}
 					
 					i = loop.start;
 					Object context = loop.iterator.next();
 					if(loop.key == null) {
 						if(loop.value == null) {
-							resolve.createContext(context);
+							resolve.enterContext(context);
 						}
 						else {
-							resolve.createContext(loop.value, context);
+							resolve.enterContext(loop.value, context);
 						}
 					}
 				}

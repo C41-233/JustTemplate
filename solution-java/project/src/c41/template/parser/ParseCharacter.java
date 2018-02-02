@@ -6,92 +6,104 @@ import c41.template.TemplateException;
 
 class ParseCharacter {
 	
-	private Integer commentPrefix;
-	private Integer logicPrefix;
-	private HashSet<Integer> parameterPrefixs = new HashSet<>();
+	private Character commentPrefix;
+	private Character logicPrefix;
+	private HashSet<Character> parameterPrefixs = new HashSet<>();
 	
-	private int openMatch = '{';
-	private int closeMatch = '}';
+	private char openMatch = '{';
+	private char closeMatch = '}';
 	
-	private final HashSet<Integer> prefixs = new HashSet<>();
+	private final HashSet<Character> prefixs = new HashSet<>();
 	
 	public ParseCharacter() {
 		prefixs.add(openMatch);
 		prefixs.add(closeMatch);
 	}
 	
-	public void setCommentPrefix(int value) {
+	public void setCommentPrefix(char value) {
 		if(commentPrefix != null) {
 			prefixs.remove(commentPrefix);
 		}
 		if(!prefixs.add(value)) {
-			throw new TemplateException();
+			throw new TemplateException("conflict prefix %c", value);
 		}
 		commentPrefix = value;
 	}
 	
-	public void setLogicPrefix(int value) {
+	public void setLogicPrefix(char value) {
 		if(logicPrefix != null) {
 			prefixs.remove(logicPrefix);
 		}
 		if(!prefixs.add(value)) {
-			throw new TemplateException();
+			throw new TemplateException("conflict prefix %c", value);
 		}
 		logicPrefix = value;
 	}
 	
-	public void addParameterPrefix(int value) {
+	public void addParameterPrefix(char value) {
 		if(!parameterPrefixs.add(value)) {
 			return;
 		}
 		if(!prefixs.add(value)) {
-			throw new TemplateException();
+			throw new TemplateException("conflict prefix %c", value);
 		}
 	}
 	
-	public void setOpenMatch(int value) {
+	public void setOpenMatch(char value) {
 		prefixs.remove(openMatch);
 		if(!prefixs.add(value)) {
-			throw new TemplateException();
+			throw new TemplateException("conflict prefix %c", value);
 		}
 	}
 	
-	public void setCloseMatch(int value) {
+	public void setCloseMatch(char value) {
 		prefixs.remove(value);
 		if(!prefixs.add(value)) {
-			throw new TemplateException();
+			throw new TemplateException("conflict prefix %c", value);
 		}
 	}
 	
-	public boolean isPrefix(int ch) {
+	public boolean isPrefix(char ch) {
 		return prefixs.contains(ch);
 	}
 
-	public boolean isOpenMatch(int ch) {
+	public boolean isPrefix(int ch) {
+		return isPrefix((char)ch);
+	}
+	
+	public boolean isOpenMatch(char ch) {
 		return openMatch == ch;
 	}
 
-	public boolean isCloseMatch(int ch) {
+	public boolean isOpenMatch(int ch) {
+		return isOpenMatch((char)ch);
+	}
+	
+	public boolean isCloseMatch(char ch) {
 		return closeMatch == ch;
 	}
 
-	public boolean isComment(int mark) {
-		return commentPrefix!=null && commentPrefix.intValue() == mark;
+	public boolean isCloseMatch(int ch) {
+		return isCloseMatch((char)ch);
+	}
+	
+	public boolean isComment(char mark) {
+		return commentPrefix!=null && commentPrefix.charValue() == mark;
 	}
 
-	public boolean isParameterPrefix(int mark) {
+	public boolean isParameterPrefix(char mark) {
 		return parameterPrefixs.contains(mark);
 	}
 
 	public boolean isLogicPrefix(char mark) {
-		return logicPrefix!=null && logicPrefix.intValue() == mark;
+		return logicPrefix!=null && logicPrefix.charValue() == mark;
 	}
 	
-	public int getOpenMatch() {
+	public char getOpenMatch() {
 		return openMatch;
 	}
 	
-	public int getCloseMatch() {
+	public char getCloseMatch() {
 		return closeMatch;
 	}
 	

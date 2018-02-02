@@ -52,6 +52,18 @@ public class TestParseException {
 	}
 
 	@Test
+	public void test9() {
+		try {
+			JustTemplate.render("${}", false);
+		}
+		catch (TemplateException e) {
+			assertEquals(ErrorString.unexpectedCharacterAfter('}', "{", 1, 3), e.getMessage());
+			return;
+		}
+		fail();
+	}
+
+	@Test
 	public void test4() {
 		try {
 			JustTemplate.render("#{else}", false);

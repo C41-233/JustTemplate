@@ -27,15 +27,19 @@ class LexicalTable {
 	
 	public void addToken(String text, TemplatePosition position) {
 		char mark = text.charAt(0);
-		String body = text.substring(2, text.length()-1);
-		
 		if(characters.isComment(mark)) {
 			return;
 		}
 		
+		String body = text.substring(2, text.length()-1);
 		if(characters.isParameterPrefix(mark)) {
 			if(body.length() == 0) {
-				throw new TemplateException();
+				throw new TemplateException(ErrorString.unexpectedCharacterAfter(
+					characters.getCloseMatch(), 
+					String.valueOf(characters.getOpenMatch()), 
+					position.line, 
+					position.column + 2
+				));
 			}
 			template.onParameter(mark, body, position.line, position.column+2);
 			return;
@@ -43,7 +47,10 @@ class LexicalTable {
 		
 		if(characters.isLogicPrefix(mark)) {
 			processLogic(body, position.offset(1, 3));
+			return;
 		}
+		
+		throw new TemplateException(text);
 	}
 	
 	private void processLogic(String body, TemplatePosition position) {
@@ -101,17 +108,18 @@ class LexicalTable {
 				else {
 					buffer.append(ch);
 				}
+				break;
 			}
 			
 			default:
-				break;
+				throw new TemplateException("state: %s", state);
 			}
 		}
 		
 		if(tokens.size() == 0) {
 			throw new TemplateException(ErrorString.unexpectedCharacterAfter(
 				characters.getCloseMatch(), 
-				String.valueOf((char)characters.getOpenMatch()), 
+				String.valueOf(characters.getOpenMatch()), 
 				position.line, 
 				position.column
 			));

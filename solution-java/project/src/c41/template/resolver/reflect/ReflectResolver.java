@@ -42,19 +42,19 @@ public class ReflectResolver implements IResolver{
 	}
 
 	@Override
-	public void createContext(Object current) {
+	public void enterContext(Object current) {
 		IContext context = new OverrideObjectContext(current, contexts.peek());
 		contexts.push(context);
 	}
 
 	@Override
-	public void createContext(String name, Object value) {
+	public void enterContext(String name, Object value) {
 		IContext context = new OverrideParameterObject(name, value, contexts.peek());
 		contexts.push(context);
 	}
 
 	@Override
-	public void releaseContext() {
+	public void leaveContext() {
 		contexts.pop();
 	}
 

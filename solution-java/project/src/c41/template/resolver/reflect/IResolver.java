@@ -10,10 +10,10 @@ public interface IResolver {
 
 	public Iterator<?> onVisitLoop(String name, int line, int column);
 	
-	public void createContext(Object current);
+	public void enterContext(Object current);
 	
-	public void createContext(String name, Object current);
+	public void enterContext(String name, Object current);
 	
-	public void releaseContext();
+	public void leaveContext();
 	
 }
