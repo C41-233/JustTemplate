@@ -45,7 +45,7 @@ public class TestParseException {
 			JustTemplate.render("#{}#{endif}", false);
 		}
 		catch (TemplateException e) {
-			assertEquals(ErrorString.emptyLogicWord(1, 2), e.getMessage());
+			assertEquals(ErrorString.unexpectedCharacterAfter('}', "{", 1, 3), e.getMessage());
 			return;
 		}
 		fail();
@@ -118,21 +118,4 @@ public class TestParseException {
 		}
 	}
 	
-	@Test
-	public void test9() {
-		List<Test1> list = new ArrayList<>();
-		list.add(new Test1(1));
-		list.add(new Test1(2));
-		list.add(new Test1(3));
-		
-		try {
-			JustTemplate.render("#{for .}#{for val}${.}#{endfor}#{endfor}", list);
-		}
-		catch (TemplateException e) {
-			assertEquals(ErrorString.unmatchedElse(1, 17), e.getMessage());
-			return;
-		}
-		fail();
-	}
-
 }

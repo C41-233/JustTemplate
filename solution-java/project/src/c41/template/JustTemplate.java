@@ -14,6 +14,19 @@ public final class JustTemplate {
 
 	private JustTemplate() {}
 	
+	private static TemplateParser defaultParser;
+	
+	private static TemplateParser getDefaultParser() {
+		if(defaultParser == null) {
+			TemplateParser parser = new TemplateParser();
+			parser.setCommentPrefix('!');
+			parser.setLogicPrefix('#');
+			parser.setParameterPrefix('$');
+			defaultParser = parser;
+		}
+		return defaultParser;
+	}
+	
 	public static String render(File template, Object object) {
 		try {
 			byte[] bs = Files.readAllBytes(template.toPath());
@@ -33,7 +46,7 @@ public final class JustTemplate {
 	}
 	
 	public static String render(String input, Object object) {
-		TemplateParser parser = new TemplateParser();
+		TemplateParser parser = getDefaultParser();
 		ITemplate tp = parser.parse(input);
 		
 		IResolver resolver = new ReflectResolver(object);
@@ -41,7 +54,7 @@ public final class JustTemplate {
 	}
 
 	public static String render(String input, Map<String, ?> parameters) {
-		TemplateParser parser = new TemplateParser();
+		TemplateParser parser = getDefaultParser();
 		ITemplate tp = parser.parse(input);
 		
 		IResolver resolver = new ReflectResolver(parameters);

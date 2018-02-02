@@ -12,10 +12,6 @@ public final class ErrorString {
 		return String.format("unrecognized logic word '%s' in line %d column %d", word, line, column);
 	}
 	
-	public static String emptyLogicWord(int line, int column) {
-		return String.format("empty logic block in line %d column %d", line, column);
-	}
-	
 	public static String unexpectedCharacterAfter(int ch, String target, int line, int column) {
 		return String.format("unexpected character '%c' after '%s' in line %d column %d", ch, target, line, column);
 	}

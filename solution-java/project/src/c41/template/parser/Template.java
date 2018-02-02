@@ -19,7 +19,7 @@ class Template implements ITemplate{
 		logicStack.push(LogicMatch.MatchAll);
 	}
 	
-	void onText(String string) {
+	void onText(String string, int line, int column) {
 		this.fragments.add(new TextFragment(string));
 	}
 
@@ -48,7 +48,7 @@ class Template implements ITemplate{
 		this.fragments.add(new ElseIfFragment(name, lineParameter, columnParameter));
 	}
 	
-	void onEndif(int line, int column) {
+	void onEndIf(int line, int column) {
 		if(logicStack.peek() != LogicMatch.MatchIf && logicStack.peek() != LogicMatch.MatchElse) {
 			throw new TemplateException(ErrorString.unmatchedEndIf(line, column));
 		}
