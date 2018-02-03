@@ -1,5 +1,7 @@
 package c41.template.parser;
 
+import c41.template.TemplatePosition;
+
 enum FragmentType{
 	Text,
 	Parameter,
@@ -37,14 +39,12 @@ class ParameterFragment implements IFragment{
 	public final char mark;
 	public final String name;
 	
-	public final int line;
-	public final int column;
+	public TemplatePosition position;
 	
-	public ParameterFragment(char mark, String name, int line, int column) {
+	public ParameterFragment(char mark, String name, TemplatePosition position) {
 		this.mark = mark;
 		this.name = name;
-		this.line = line;
-		this.column = column;
+		this.position = position;
 	}
 
 	@Override

@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Stack;
 
 import c41.template.TemplateException;
+import c41.template.TemplatePosition;
 import c41.template.internal.util.ErrorString;
 import c41.template.internal.util.FastStack;
 import c41.template.resolver.reflect.IResolver;
@@ -19,12 +20,12 @@ class Template implements ITemplate{
 		logicStack.push(LogicMatch.MatchAll);
 	}
 	
-	void onText(String string, int line, int column) {
+	void onText(String string, TemplatePosition position) {
 		this.fragments.add(new TextFragment(string));
 	}
 
-	void onParameter(char mark, String name, int line, int column) {
-		this.fragments.add(new ParameterFragment(mark, name, line, column));
+	void onParameter(char mark, String name, TemplatePosition position) {
+		this.fragments.add(new ParameterFragment(mark, name, position));
 	}
 
 	void onIf(String name, int lineStart, int columnStart, int lineParameter, int columnParameter) {
@@ -105,7 +106,7 @@ class Template implements ITemplate{
 					continue;
 				}
 				ParameterFragment fragment = (ParameterFragment)f;
-				sb.append(resolve.onVisitParameter(fragment.mark, fragment.name, fragment.line, fragment.column));
+				sb.append(resolve.onVisitParameter(fragment.mark, fragment.name, fragment.position.line, fragment.position.column));
 				break;
 			}
 			case If:{

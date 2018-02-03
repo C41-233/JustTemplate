@@ -123,9 +123,9 @@ public class TestParseException {
 		fail();
 	}
 
-	private static class Test1{
+	private static class TestClass1{
 		String val;
-		public Test1(int val) {
+		public TestClass1(int val) {
 			this.val = ""+val+val+val;
 		}
 	}

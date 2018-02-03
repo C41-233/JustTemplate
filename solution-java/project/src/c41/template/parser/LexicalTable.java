@@ -22,7 +22,7 @@ class LexicalTable {
 		if(text.length() == 0) {
 			return;
 		}
-		template.onText(text, position.line, position.column);
+		template.onText(text, position);
 	}
 	
 	public void addToken(String text, TemplatePosition position) {
@@ -32,25 +32,30 @@ class LexicalTable {
 		}
 		
 		String body = text.substring(2, text.length()-1);
+		TemplatePosition bodyPosition = position.offset(1, 3);
 		if(characters.isParameterPrefix(mark)) {
-			if(body.length() == 0) {
-				throw new TemplateException(ErrorString.unexpectedCharacterAfter(
-					characters.getCloseMatch(), 
-					String.valueOf(characters.getOpenMatch()), 
-					position.line, 
-					position.column + 2
-				));
-			}
-			template.onParameter(mark, body, position.line, position.column+2);
+			processParameter(mark, body, bodyPosition);
 			return;
 		}
 		
 		if(characters.isLogicPrefix(mark)) {
-			processLogic(body, position.offset(1, 3));
+			processLogic(body, bodyPosition);
 			return;
 		}
 		
 		throw new TemplateException(text);
+	}
+	
+	private void processParameter(char mark, String body, TemplatePosition position) {
+		if(body.length() == 0) {
+			throw new TemplateException(ErrorString.unexpectedCharacterAfter(
+				characters.getCloseMatch(), 
+				String.valueOf(characters.getOpenMatch()), 
+				position.line, 
+				position.column
+			));
+		}
+		template.onParameter(mark, body, position);
 	}
 	
 	private void processLogic(String body, TemplatePosition position) {
@@ -229,6 +234,7 @@ class LexicalTable {
 			template.onEndFor(word.position.line, word.position.column);
 			break;
 		}
+		
 		default:
 			throw new TemplateException(ErrorString.unrecognizedLogicWord(word.text, word.position.line, word.position.column));
 		}

@@ -99,6 +99,14 @@ class ParseCharacter {
 		return logicPrefix!=null && logicPrefix.charValue() == mark;
 	}
 	
+	public boolean isWhitespace(int value) {
+		return isWhitespace((char)value);
+	}
+	
+	public boolean isWhitespace(char value) {
+		return Character.isWhitespace(value);
+	}
+	
 	public char getOpenMatch() {
 		return openMatch;
 	}
